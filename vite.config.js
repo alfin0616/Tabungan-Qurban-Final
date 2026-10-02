@@ -16,7 +16,7 @@ export default defineConfig({
       injectManifest: {
         maximumFileSizeToCacheInBytes: 4000000,
       },
-      includeAssets: ['logo-siqurban.png', 'apple-touch-icon.png'],
+      includeAssets: ['SQNn.png', 'SQNn.png'],
       manifest: {
         name: 'SIQURBAN - MHM',
         short_name: 'SIQURBAN',
