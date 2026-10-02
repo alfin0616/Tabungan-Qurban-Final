@@ -32,7 +32,7 @@ import toast from 'react-hot-toast'
 import { cn } from '../../lib/cn'
 import { useAuth } from '../../context/AuthContext'
 import { useSettings } from '../../hooks/useSettings'
-import logoSiqurban from '../../assets/logo-siqurban.png'
+import logoSQNn from '../../assets/SQNn.png'
 
 // Top-level reguler menu
 const topLevelMenu = [
@@ -105,7 +105,7 @@ const superAdminMenuGroups = [
 export default function Sidebar({ open, onClose, collapsed: propCollapsed, onToggleCollapsed }) {
   const { logout, isAdmin, isSuperAdmin } = useAuth()
   const { data: settings } = useSettings()
-  const logoUrl = settings?.logo_url || logoSiqurban
+  const logoUrl = settings?.logo_url || logoSQNn
   const appName = settings?.app_name || 'SIQURBAN'
   const navigate = useNavigate()
   const location = useLocation()
@@ -201,7 +201,7 @@ export default function Sidebar({ open, onClose, collapsed: propCollapsed, onTog
               alt={appName}
               className="h-9 w-9 rounded-xl object-contain shadow-soft bg-white/10 p-0.5"
               onError={(e) => {
-                e.target.src = logoSiqurban
+                e.target.src = logoSQNn
               }}
             />
             <div className={cn('flex flex-col leading-tight', collapsed && 'lg:hidden')}>

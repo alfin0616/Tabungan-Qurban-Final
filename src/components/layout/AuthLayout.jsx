@@ -1,10 +1,10 @@
 import { Outlet } from 'react-router-dom'
 import { useSettings } from '../../hooks/useSettings'
-import logoSiqurban from '../../assets/logo-siqurban.png'
+import logoSQNn from '../../assets/SQNn.png'
 
 export default function AuthLayout() {
   const { data: settings } = useSettings()
-  const logoUrl = settings?.logo_url || logoSiqurban
+  const logoUrl = settings?.logo_url || logoSQNn
   const appName = settings?.app_name || 'SIQURBAN'
 
   return (
@@ -19,7 +19,7 @@ export default function AuthLayout() {
             src={logoUrl}
             alt={appName}
             className="h-11 w-11 rounded-full object-cover ring-2 ring-white/20"
-            onError={(e) => { e.target.src = logoSiqurban }}
+            onError={(e) => { e.target.src = logoSQNn }}
           />
           <span className="text-lg font-bold">{appName}</span>
         </div>
@@ -51,7 +51,7 @@ export default function AuthLayout() {
             src={logoUrl}
             alt={appName}
             className="h-16 w-16 rounded-full object-cover ring-4 ring-white/20 shadow-lg"
-            onError={(e) => { e.target.src = logoSiqurban }}
+            onError={(e) => { e.target.src = logoSQNn }}
           />
           <div>
             <p className="text-xl font-bold">{appName}</p>
