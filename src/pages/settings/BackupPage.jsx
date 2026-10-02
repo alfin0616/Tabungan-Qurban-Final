@@ -330,8 +330,8 @@ export default function BackupPage() {
               onClick={async () => {
                 try {
                   const { automationRepository } = await import('../../repositories/automationRepository')
-                  const res = await automationRepository.triggerMonthlyReminders()
-                  toast.success(`Pengingat setoran bulanan dikirim (${res.reminders_sent || 0} notifikasi)`)
+                  const res = await automationRepository.triggerMonthlyRemindersWithWA()
+                  toast.success(`Pengingat setoran bulanan dikirim (${res.reminders_sent || 0} notif dalam aplikasi, ${res.wa_sent || 0} WhatsApp)`)
                 } catch (err) {
                   toast.error(err.message)
                 }
