@@ -4,6 +4,7 @@ import toast from 'react-hot-toast'
 import { useCreatePenarikan } from '../../hooks/useTransaksi'
 import { useAnggotaSelect } from '../../hooks/useAnggota'
 import { useSettings } from '../../hooks/useSettings'
+import { useAuth } from '../../context/AuthContext'
 import { Card, CardHeader, CardTitle } from '../../components/ui/Card'
 import Button from '../../components/ui/Button'
 import PenarikanForm from '../../components/forms/PenarikanForm'
@@ -13,6 +14,7 @@ export default function PenarikanPage() {
   const createPenarikan = useCreatePenarikan()
   const { data: anggotaList } = useAnggotaSelect()
   const { data: settings } = useSettings()
+  const { instansiSaya } = useAuth()
   const [lastTransaksi, setLastTransaksi] = useState(null)
 
   async function handleSubmit(values) {
@@ -36,7 +38,8 @@ export default function PenarikanPage() {
       tanggal: lastTransaksi.tanggal,
       nominal: lastTransaksi.nominal,
       keterangan: lastTransaksi.keterangan,
-      namaInstansi: settings?.nama_instansi,
+      namaInstansi: instansiSaya?.nama_instansi || settings?.nama_instansi || 'SIQURBAN',
+      alamatInstansi: instansiSaya?.alamat || '',
     })
   }
 

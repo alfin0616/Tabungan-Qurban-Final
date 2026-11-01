@@ -1,12 +1,27 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Link, useNavigate } from 'react-router-dom'
-import { User, Phone, Mail, Lock, Building2, Users, ShieldCheck, RefreshCw } from 'lucide-react'
+import {
+  User,
+  Phone,
+  Mail,
+  Lock,
+  Building2,
+  Users,
+  ShieldCheck,
+  CalendarClock,
+  Calculator,
+} from 'lucide-react'
 import toast from 'react-hot-toast'
 import { registerJamaahSchema } from '../../validations/authValidation'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../api/supabaseClient'
+import {
+  formatCurrency,
+  calculateSkemaTabungan,
+  LAMA_TABUNGAN_PRESETS,
+} from '../../utils/formatCurrency'
 import Input from '../ui/Input'
 import Button from '../ui/Button'
 
@@ -18,6 +33,7 @@ export default function RegisterForm() {
   const [kelompokList, setKelompokList] = useState([])
   const [loadingInstansi, setLoadingInstansi] = useState(true)
   const [loadingKelompok, setLoadingKelompok] = useState(false)
+  const [customLama, setCustomLama] = useState(false)
 
   const {
     register,
@@ -32,6 +48,8 @@ export default function RegisterForm() {
       phone: '',
       instansiId: '',
       kelompokId: '',
+      periodeSetoran: 'bulanan',
+      lamaTabungan: 12,
       email: '',
       password: '',
       confirmPassword: '',
@@ -39,6 +57,9 @@ export default function RegisterForm() {
   })
 
   const selectedInstansiId = watch('instansiId')
+  const selectedKelompokId = watch('kelompokId')
+  const periodeSetoran = watch('periodeSetoran')
+  const lamaTabungan = watch('lamaTabungan')
 
   useEffect(() => {
     fetchInstansiList()
@@ -60,7 +81,6 @@ export default function RegisterForm() {
       if (!error && data) {
         setInstansiList(data)
       } else {
-        // Fallback jika belum migrasi rpc
         const { data: rawData } = await supabase
           .from('instansi')
           .select('id, nama_instansi, alamat')
@@ -99,6 +119,25 @@ export default function RegisterForm() {
     }
   }
 
+  const targetPerAnggota = useMemo(() => {
+    const klp = kelompokList.find((k) => k.id === selectedKelompokId)
+    if (!klp) return 3000000
+    const total = Number(klp.target_dana || 21000000)
+    const kuota = klp.jenis_qurban === 'kambing' ? 1 : 7
+    return kuota > 1 && total >= 7000000 ? Math.ceil(total / kuota) : total
+  }, [kelompokList, selectedKelompokId])
+
+  const simulasi = useMemo(
+    () =>
+      calculateSkemaTabungan({
+        target: targetPerAnggota,
+        saldo: 0,
+        periode: periodeSetoran,
+        lamaBulan: lamaTabungan,
+      }),
+    [targetPerAnggota, periodeSetoran, lamaTabungan],
+  )
+
   async function onSubmit(values) {
     try {
       await registerJamaah({
@@ -108,6 +147,8 @@ export default function RegisterForm() {
         password: values.password,
         instansiId: values.instansiId,
         kelompokId: values.kelompokId,
+        periodeSetoran: values.periodeSetoran,
+        lamaTabungan: Number(values.lamaTabungan) || 12,
       })
       toast.success('Pendaftaran Jamaah Berhasil! Anda terhubung ke Masjid & Kelompok Qurban.')
       navigate('/dashboard', { replace: true })
@@ -121,7 +162,7 @@ export default function RegisterForm() {
       <div className="rounded-xl border border-emerald-500/30 bg-emerald-50/70 dark:bg-emerald-950/30 p-3.5 text-xs text-emerald-800 dark:text-emerald-200 flex items-start gap-2.5">
         <ShieldCheck className="h-5 w-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
         <div>
-          <span className="font-bold">Wajib Pilih Masjid & Kelompok:</span> Pemilihan masjid dan kelompok Qurban di awal memastikan Anda melihat data pemasukan dan pengeluaran yang tepat.
+          <span className="font-bold">Tabungan Fleksibel Tanpa Batas Waktu:</span> Pilih kelompok qurban, siklus setoran (bulanan/mingguan), serta lama tabungan sesuai kemampuan Anda (misal 12 s.d. 30 bulan).
         </div>
       </div>
 
@@ -154,7 +195,7 @@ export default function RegisterForm() {
         <select
           {...register('instansiId')}
           disabled={loadingInstansi}
-          className="block w-full rounded-xl border border-border dark:border-border-dark bg-bg dark:bg-bg-dark px-3.5 py-2.5 text-sm font-medium text-ink dark:text-ink-dark focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 disabled:opacity-50"
+          className="h-11 block w-full rounded-xl border border-border dark:border-border-dark bg-white dark:bg-bg-dark px-3.5 text-sm font-medium text-ink dark:text-ink-dark focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 disabled:opacity-50"
         >
           <option value="">
             {loadingInstansi ? '-- Memuat daftar masjid... --' : '-- Pilih Masjid / Instansi Anda --'}
@@ -179,7 +220,7 @@ export default function RegisterForm() {
         <select
           {...register('kelompokId')}
           disabled={!selectedInstansiId || loadingKelompok}
-          className="block w-full rounded-xl border border-border dark:border-border-dark bg-bg dark:bg-bg-dark px-3.5 py-2.5 text-sm font-medium text-ink dark:text-ink-dark focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 disabled:opacity-50"
+          className="h-11 block w-full rounded-xl border border-border dark:border-border-dark bg-white dark:bg-bg-dark px-3.5 text-sm font-medium text-ink dark:text-ink-dark focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 disabled:opacity-50"
         >
           <option value="">
             {!selectedInstansiId
@@ -190,13 +231,86 @@ export default function RegisterForm() {
           </option>
           {kelompokList.map((klp) => (
             <option key={klp.id} value={klp.id}>
-              {klp.nama_kelompok} — ({klp.jenis_qurban === 'sapi' ? 'Sapi 1/7' : 'Kambing 1/1'}, Target: Rp {Number(klp.target_dana || 3500000).toLocaleString('id-ID')})
+              {klp.nama_kelompok} — ({klp.jenis_qurban === 'sapi' ? 'Sapi 1/7' : 'Kambing 1/1'})
             </option>
           ))}
         </select>
         {errors.kelompokId && (
           <p className="mt-1 text-xs font-medium text-red-500">{errors.kelompokId.message}</p>
         )}
+      </div>
+
+      {/* PILIHAN SETORAN BULANAN/MINGGUAN & LAMA TABUNGAN */}
+      <div className="rounded-2xl border border-emerald-500/25 bg-emerald-50/50 dark:bg-emerald-950/25 p-4 space-y-3">
+        <div className="flex items-center gap-2 text-xs font-bold text-emerald-800 dark:text-emerald-300">
+          <CalendarClock className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+          <span>Rencana Setoran &amp; Lama Tabungan Anda</span>
+        </div>
+
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div>
+            <label className="block text-xs font-semibold text-ink dark:text-ink-dark mb-1">
+              Pilihan Setoran
+            </label>
+            <select
+              {...register('periodeSetoran')}
+              className="h-11 block w-full rounded-xl border border-border dark:border-border-dark bg-white dark:bg-bg-dark px-3 text-xs sm:text-sm font-medium text-ink dark:text-ink-dark focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+            >
+              <option value="bulanan">Setoran Bulanan</option>
+              <option value="mingguan">Setoran Mingguan</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-ink dark:text-ink-dark mb-1">
+              Lama Tabungan
+            </label>
+            <select
+              value={customLama ? 'custom' : String(lamaTabungan)}
+              onChange={(e) => {
+                const v = e.target.value
+                if (v === 'custom') {
+                  setCustomLama(true)
+                } else {
+                  setCustomLama(false)
+                  setValue('lamaTabungan', Number(v), { shouldValidate: true })
+                }
+              }}
+              className="h-11 block w-full rounded-xl border border-border dark:border-border-dark bg-white dark:bg-bg-dark px-3 text-xs sm:text-sm font-medium text-ink dark:text-ink-dark focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+            >
+              {LAMA_TABUNGAN_PRESETS.map((p) => (
+                <option key={p.value} value={String(p.value)}>
+                  {p.label}
+                </option>
+              ))}
+              <option value="custom">Bebas / Kustom Bulan...</option>
+            </select>
+          </div>
+        </div>
+
+        {customLama && (
+          <Input
+            label="Lama Tabungan (Bulan)"
+            type="number"
+            min={1}
+            max={120}
+            placeholder="Contoh: 30 (untuk 30 bulan)"
+            error={errors.lamaTabungan?.message}
+            {...register('lamaTabungan')}
+          />
+        )}
+
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 rounded-xl border border-emerald-500/20 bg-white dark:bg-bg-dark p-3 text-xs">
+          <div className="flex items-center gap-2 text-ink-muted dark:text-ink-muted-dark">
+            <Calculator className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+            <span>
+              Target per orang {formatCurrency(targetPerAnggota)} ({simulasi.lamaBulan} bln / {simulasi.totalPeriode}x {simulasi.labelPeriode}):
+            </span>
+          </div>
+          <span className="font-extrabold text-sm text-emerald-700 dark:text-emerald-400">
+            {formatCurrency(simulasi.nominalPerPeriode)} / {simulasi.labelPeriode}
+          </span>
+        </div>
       </div>
 
       <Input
@@ -228,8 +342,8 @@ export default function RegisterForm() {
         {...register('confirmPassword')}
       />
 
-      <Button type="submit" className="w-full mt-3" loading={isSubmitting}>
-        Daftar & Hubungkan ke Kelompok
+      <Button type="submit" className="h-11 w-full mt-3" loading={isSubmitting}>
+        Daftar &amp; Mulai Tabungan Qurban
       </Button>
 
       <div className="pt-4 border-t border-border dark:border-border-dark text-center">

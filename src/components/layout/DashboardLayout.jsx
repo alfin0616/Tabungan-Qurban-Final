@@ -5,9 +5,12 @@ import Navbar from './Navbar'
 import OfflineBanner from './OfflineBanner'
 import BottomNav from './BottomNav'
 import { useAuth } from '../../context/AuthContext'
+import { cn } from '../../lib/cn'
 
 const titles = {
   '/dashboard': 'Dashboard',
+  '/instansi': 'Manajemen Instansi',
+  '/kelompok': 'Manajemen Kelompok',
   '/anggota': 'Data Anggota',
   '/tabungan': 'Tabungan',
   '/transaksi/setoran': 'Setoran',
@@ -17,6 +20,8 @@ const titles = {
   '/pengeluaran': 'Pengeluaran Operasional',
   '/profile': 'Profil Saya',
   '/settings': 'Pengaturan',
+  '/files': 'File Manager',
+  '/activity-center': 'Activity Center',
   // Super Admin
   '/superadmin/dashboard': 'Dashboard Super Admin',
   '/superadmin/instansi': 'Manajemen Instansi',
@@ -37,15 +42,13 @@ function resolveTitle(pathname) {
   return 'SIQURBAN'
 }
 
-import { cn } from '../../lib/cn'
-
 export default function DashboardLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [collapsed, setCollapsed] = useState(() => {
     return localStorage.getItem('siqurban_sidebar_collapsed') === 'true'
   })
   const { pathname } = useLocation()
-  const { isAdmin, isSuperAdmin } = useAuth()
+  const { isAdmin, isSuperAdmin, instansiSaya } = useAuth()
   const isJamaah = !isAdmin && !isSuperAdmin
 
   const toggleCollapsed = () => {
@@ -71,8 +74,53 @@ export default function DashboardLayout() {
         )}
       >
         <OfflineBanner />
-        <Navbar onMenuClick={() => setSidebarOpen(true)} title={resolveTitle(pathname)} />
-        <main className={cn("safe-bottom flex-1 min-w-0 w-full px-4 py-6 lg:px-6", isJamaah && "pb-24 lg:pb-6")}>
+        <Navbar
+          onMenuClick={() => setSidebarOpen(true)}
+          onToggleCollapsed={toggleCollapsed}
+          collapsed={collapsed}
+          title={resolveTitle(pathname)}
+        />
+
+        {/* Argon Extended Gradient Hero Header — Selaras dengan warna Deep Emerald Sidebar */}
+        <div className="relative overflow-hidden bg-gradient-to-r from-emerald-900 via-emerald-800 to-emerald-700 dark:from-emerald-950 dark:via-emerald-900 dark:to-emerald-800 px-4 pt-5 pb-20 lg:px-6 shadow-sm">
+          <div className="pointer-events-none absolute inset-0 overflow-hidden">
+            <div className="absolute -top-16 -right-16 h-56 w-56 rounded-full bg-white/10 blur-2xl" />
+            <div className="absolute bottom-0 left-1/4 h-40 w-40 rounded-full bg-black/10 blur-xl" />
+          </div>
+          <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-2 text-xs font-medium text-emerald-100/90">
+                <span>SIQURBAN</span>
+                <span>/</span>
+                <span className="font-semibold text-white">{resolveTitle(pathname)}</span>
+              </div>
+              <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
+                {resolveTitle(pathname)}
+              </h2>
+            </div>
+
+            {isSuperAdmin ? (
+              <div className="inline-flex items-center gap-2 self-start sm:self-auto rounded-xl bg-white/15 backdrop-blur-xs border border-white/20 px-3.5 py-2 text-xs font-semibold text-white shadow-xs">
+                <span className="h-2 w-2 rounded-full bg-amber-300 animate-pulse" />
+                <span>Super Admin • Monitoring Seluruh Instansi</span>
+              </div>
+            ) : (
+              instansiSaya?.nama_instansi && (
+                <div className="inline-flex items-center gap-2 self-start sm:self-auto rounded-xl bg-white/15 backdrop-blur-xs border border-white/20 px-3.5 py-2 text-xs font-semibold text-white shadow-xs">
+                  <span className="h-2 w-2 rounded-full bg-emerald-300 animate-pulse" />
+                  <span>Panel Instansi: {instansiSaya.nama_instansi}</span>
+                </div>
+              )
+            )}
+          </div>
+        </div>
+
+        <main
+          className={cn(
+            'safe-bottom relative z-10 -mt-14 flex-1 min-w-0 w-full px-4 pb-6 lg:px-6',
+            isJamaah && 'pb-24 lg:pb-6',
+          )}
+        >
           <Outlet />
         </main>
         {isJamaah && <BottomNav />}

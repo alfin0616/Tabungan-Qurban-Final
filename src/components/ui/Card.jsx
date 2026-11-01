@@ -5,7 +5,7 @@ export const Card = memo(function Card({ className, children, ...props }) {
   return (
     <div
       className={cn(
-        'rounded-2xl border border-border dark:border-border-dark bg-surface dark:bg-surface-dark p-5 shadow-soft',
+        'rounded-2xl border border-border/80 dark:border-border-dark bg-surface dark:bg-surface-dark p-5 shadow-argon',
         className,
       )}
       {...props}

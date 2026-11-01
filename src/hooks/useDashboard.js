@@ -5,10 +5,10 @@ export function useDashboardSummary() {
   return useQuery({ queryKey: ['dashboard', 'summary'], queryFn: getDashboardSummary })
 }
 
-export function useGrafikSetoran() {
+export function useGrafikSetoran(periode = 'bulanan') {
   return useQuery({
-    queryKey: ['dashboard', 'grafik'],
-    queryFn: getGrafikSetoran,
+    queryKey: ['dashboard', 'grafik', periode],
+    queryFn: () => getGrafikSetoran(periode),
   })
 }
 

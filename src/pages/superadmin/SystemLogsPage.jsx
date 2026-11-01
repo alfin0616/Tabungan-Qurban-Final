@@ -89,15 +89,15 @@ export default function SystemLogsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400">
+      {/* Header inside Argon Card */}
+      <div className="rounded-2xl border border-border/80 dark:border-border-dark bg-surface dark:bg-surface-dark p-5 shadow-argon flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-3.5">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400">
             <Bug className="h-5 w-5" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-ink dark:text-ink-dark">System & Error Logs</h1>
-            <p className="text-sm text-ink-muted dark:text-ink-muted-dark">
+            <h1 className="text-lg sm:text-xl font-bold text-ink dark:text-ink-dark">System & Error Logs</h1>
+            <p className="text-xs sm:text-sm text-ink-muted dark:text-ink-muted-dark">
               Pusat pencatatan error terpusat (Frontend, Supabase, Payment, PWA & Edge Functions).
             </p>
           </div>

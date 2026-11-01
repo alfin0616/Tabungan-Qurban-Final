@@ -61,9 +61,8 @@ export default function AppRoutes() {
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
             <Route path="/dashboard" element={<DashboardPage />} />
 
-            {/* Master Data */}
+            {/* Master Data (Admin Instansi hanya bisa kelola Kelompok di instansinya) */}
             <Route element={<AdminRoute />}>
-              <Route path="/instansi" element={<InstansiListPage />} />
               <Route path="/kelompok" element={<KelompokListPage />} />
             </Route>
 
@@ -87,6 +86,8 @@ export default function AppRoutes() {
 
             {/* Khusus superadmin — admin instansi & jamaah dialihkan ke dashboard */}
             <Route element={<SuperAdminRoute />}>
+              <Route path="/instansi" element={<InstansiListPage />} />
+              <Route path="/superadmin/instansi" element={<InstansiListPage />} />
               <Route path="/superadmin/dashboard" element={<SuperAdminDashboardPage />} />
               <Route path="/superadmin/monitoring" element={<MonitoringPage />} />
               <Route path="/superadmin/logs" element={<SystemLogsPage />} />

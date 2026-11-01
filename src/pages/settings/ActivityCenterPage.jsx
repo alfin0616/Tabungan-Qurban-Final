@@ -115,15 +115,15 @@ export default function ActivityCenterPage() {
   return (
     <div className="space-y-6">
       {/* ======== HEADER & REALTIME INDICATOR ======== */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="rounded-2xl border border-border/80 dark:border-border-dark bg-surface dark:bg-surface-dark p-5 shadow-argon flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="flex items-center gap-2.5">
-            <Activity className="h-7 w-7 text-emerald-600" />
-            <h1 className="text-xl font-bold text-ink dark:text-ink-dark sm:text-2xl">
+            <Activity className="h-6 w-6 text-emerald-700 dark:text-emerald-400" />
+            <h1 className="text-lg font-bold text-ink dark:text-ink-dark sm:text-xl">
               Activity Center
             </h1>
           </div>
-          <p className="mt-0.5 text-sm text-ink-muted dark:text-ink-muted-dark">
+          <p className="mt-0.5 text-xs sm:text-sm text-ink-muted dark:text-ink-muted-dark">
             Pantau seluruh riwayat aktivitas sistem, autentikasi, transaksi, dan perubahan data secara realtime.
           </p>
         </div>

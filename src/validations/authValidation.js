@@ -15,6 +15,12 @@ export const registerJamaahSchema = z
       .regex(/^[0-9+\s-]+$/, 'Nomor HP hanya boleh berisi angka'),
     instansiId: z.string().min(1, 'Wajib memilih Masjid / Instansi'),
     kelompokId: z.string().min(1, 'Wajib memilih Kelompok Qurban'),
+    periodeSetoran: z.enum(['bulanan', 'mingguan']).default('bulanan'),
+    lamaTabungan: z.coerce
+      .number()
+      .min(1, 'Lama tabungan minimal 1 bulan')
+      .max(120, 'Lama tabungan maksimal 120 bulan')
+      .default(12),
     email: z
       .string()
       .optional()

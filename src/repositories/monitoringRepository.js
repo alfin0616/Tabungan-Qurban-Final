@@ -66,14 +66,14 @@ export const monitoringRepository = {
   },
 
   /**
-   * Mengambil kesehatan per instansi (jumlah anggota, saldo, & status)
+   * Mengambil daftar instansi untuk pemantauan Super Admin
    */
   getInstansiHealthList: async () => {
     try {
       const { data, error } = await supabase
         .from('instansi')
-        .select('id, nama, kode_instansi, status, created_at')
-        .order('nama', { ascending: true })
+        .select('id, nama_instansi, kode_instansi, tahun_qurban_aktif, telepon, email, status, created_at')
+        .order('nama_instansi', { ascending: true })
 
       if (error) throw error
       return data || []

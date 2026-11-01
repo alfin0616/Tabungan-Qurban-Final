@@ -21,8 +21,12 @@ export function useTabunganByAnggota(anggotaId) {
 export function useUpdateTargetTabungan() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ id, target }) => updateTargetTabungan(id, target),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['tabungan'] }),
+    mutationFn: ({ id, target, anggota_id, periode_setoran, lama_tabungan }) =>
+      updateTargetTabungan(id, target, { anggota_id, periode_setoran, lama_tabungan }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tabungan'] })
+      queryClient.invalidateQueries({ queryKey: ['anggota'] })
+    },
   })
 }
 

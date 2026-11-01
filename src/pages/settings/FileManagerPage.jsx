@@ -101,13 +101,13 @@ export default function FileManagerPage() {
   return (
     <div className="space-y-6">
       {/* ======== HEADER & STATS ======== */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="rounded-2xl border border-border/80 dark:border-border-dark bg-surface dark:bg-surface-dark p-5 shadow-argon flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="flex items-center gap-2.5 text-xl font-bold text-ink dark:text-ink-dark sm:text-2xl">
-            <FolderOpen className="h-7 w-7 text-emerald-600" />
+          <h1 className="flex items-center gap-2.5 text-lg font-bold text-ink dark:text-ink-dark sm:text-xl">
+            <FolderOpen className="h-6 w-6 text-emerald-700 dark:text-emerald-400" />
             File Manager
           </h1>
-          <p className="mt-0.5 text-sm text-ink-muted dark:text-ink-muted-dark">
+          <p className="mt-0.5 text-xs sm:text-sm text-ink-muted dark:text-ink-muted-dark">
             Kelola berkas aset instansi, jamaah, dokumen, dan bukti pembayaran di Supabase Storage.
           </p>
         </div>

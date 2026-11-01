@@ -10,6 +10,7 @@ import {
   ShieldCheck,
   Radio,
   CheckCircle2,
+  Eye,
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
@@ -17,6 +18,7 @@ import { monitoringRepository } from '../../repositories/monitoringRepository'
 import { Card, CardHeader, CardTitle } from '../../components/ui/Card'
 import StatCard from '../../components/cards/StatCard'
 import Badge from '../../components/ui/Badge'
+import InstansiMonitoringModal from '../../components/modal/InstansiMonitoringModal'
 import { SkeletonCard, SkeletonTableRow } from '../../components/ui/Skeleton'
 import { formatCurrency } from '../../utils/formatCurrency'
 
@@ -28,6 +30,7 @@ export default function MonitoringPage() {
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [lastUpdated, setLastUpdated] = useState(new Date())
+  const [monitoringInstansi, setMonitoringInstansi] = useState(null)
 
   const fetchData = useCallback(async () => {
     setRefreshing(true)
@@ -54,7 +57,6 @@ export default function MonitoringPage() {
 
   useEffect(() => {
     fetchData()
-    // Auto-refresh setiap 30 detik untuk monitoring real-time
     const interval = setInterval(fetchData, 30000)
     return () => clearInterval(interval)
   }, [fetchData])
@@ -68,16 +70,16 @@ export default function MonitoringPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header & Refresh Controls */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400">
+      {/* Header & Refresh Controls inside Argon Card */}
+      <div className="rounded-2xl border border-border/80 dark:border-border-dark bg-surface dark:bg-surface-dark p-5 shadow-argon flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-3.5">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-tl from-emerald-800 to-emerald-600 text-white shadow-md shadow-emerald-900/20">
             <Activity className="h-5 w-5" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-ink dark:text-ink-dark">System Monitoring</h1>
-            <p className="text-sm text-ink-muted dark:text-ink-muted-dark">
-              Pemantauan kesehatan database, latensi server, dan aktivitas real-time.
+            <h1 className="text-lg sm:text-xl font-bold text-ink dark:text-ink-dark">System & Multi-Tenant Monitoring</h1>
+            <p className="text-xs sm:text-sm text-ink-muted dark:text-ink-muted-dark">
+              Pemantauan kesehatan database, seluruh instansi, kelompok, hingga anggota secara real-time.
             </p>
           </div>
         </div>
@@ -90,7 +92,7 @@ export default function MonitoringPage() {
           <button
             onClick={fetchData}
             disabled={refreshing}
-            className="inline-flex items-center gap-2 rounded-xl border border-border bg-surface px-4 py-2 text-xs font-semibold text-ink shadow-sm transition-colors hover:bg-slate-100 dark:border-border-dark dark:bg-surface-dark dark:text-ink-dark dark:hover:bg-slate-800"
+            className="inline-flex items-center gap-2 rounded-xl border border-border bg-bg px-4 py-2 text-xs font-semibold text-ink shadow-2xs transition-colors hover:bg-emerald-50 dark:border-border-dark dark:bg-slate-800 dark:text-ink-dark dark:hover:bg-slate-700"
           >
             <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? 'animate-spin' : ''}`} />
             Refresh Data
@@ -144,6 +146,7 @@ export default function MonitoringPage() {
             label="Instansi Aktif"
             value={metrics?.total_instansi || 0}
             hint="Masjid / Lembaga terdaftar"
+            to="/superadmin/instansi"
           />
           <StatCard
             icon={Users}
@@ -151,6 +154,7 @@ export default function MonitoringPage() {
             label="Total Jamaah (Anggota)"
             value={metrics?.total_anggota || 0}
             hint="Terhubung di seluruh instansi"
+            to="/anggota"
           />
           <StatCard
             icon={Zap}
@@ -158,6 +162,7 @@ export default function MonitoringPage() {
             label="Total Transaksi"
             value={metrics?.total_transaksi || 0}
             hint="Setoran & penarikan"
+            to="/transaksi/riwayat"
           />
           <StatCard
             icon={ShieldCheck}
@@ -165,6 +170,7 @@ export default function MonitoringPage() {
             label="Volume Saldo Nasional"
             value={formatCurrency(metrics?.total_saldo || 0)}
             hint="Akumulasi saldo terkini"
+            to="/tabungan"
           />
         </div>
       )}
@@ -197,7 +203,7 @@ export default function MonitoringPage() {
                   >
                     <div className="space-y-0.5">
                       <div className="flex items-center gap-2">
-                        <span className="rounded-md bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+                        <span className="rounded-md bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400">
                           {act.action}
                         </span>
                         <span className="text-xs font-medium text-ink dark:text-ink-dark">
@@ -218,14 +224,16 @@ export default function MonitoringPage() {
           </div>
         </Card>
 
-        {/* Instansi Health Status */}
+        {/* Instansi Health Status & Drill-down Monitoring */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Building2 className="h-5 w-5 text-emerald-600" />
-              Status Kesehatan Instansi
+              <Building2 className="h-5 w-5 text-emerald-700" />
+              Monitoring Seluruh Instansi
             </CardTitle>
-            <span className="text-xs text-ink-muted dark:text-ink-muted-dark">Daftar Instansi</span>
+            <span className="text-xs text-ink-muted dark:text-ink-muted-dark">
+              Klik Monitor untuk cek Kelompok & Anggota
+            </span>
           </CardHeader>
 
           <div className="p-5 pt-0">
@@ -238,18 +246,31 @@ export default function MonitoringPage() {
             ) : (
               <div className="divide-y divide-border dark:divide-border-dark">
                 {instansiList.map((inst) => (
-                  <div key={inst.id} className="flex items-center justify-between py-3">
+                  <div key={inst.id} className="flex items-center justify-between gap-3 py-3">
                     <div>
                       <p className="text-sm font-semibold text-ink dark:text-ink-dark">
-                        {inst.nama}
+                        {inst.nama_instansi || inst.nama}
                       </p>
                       <p className="text-xs text-ink-muted dark:text-ink-muted-dark">
-                        Kode: {inst.kode_instansi || '-'} • Dibuat: {format(new Date(inst.created_at), 'd MMM yyyy', { locale: id })}
+                        Kode: <span className="font-mono">{inst.kode_instansi || '-'}</span> • Dibuat:{' '}
+                        {inst.created_at
+                          ? format(new Date(inst.created_at), 'd MMM yyyy', { locale: id })
+                          : '-'}
                       </p>
                     </div>
-                    <Badge variant={inst.status ? 'success' : 'danger'}>
-                      {inst.status ? 'Aktif' : 'Non-Aktif'}
-                    </Badge>
+                    <div className="flex items-center gap-2">
+                      <Badge variant={inst.status ? 'success' : 'danger'}>
+                        {inst.status ? 'Aktif' : 'Non-Aktif'}
+                      </Badge>
+                      <button
+                        type="button"
+                        onClick={() => setMonitoringInstansi(inst)}
+                        className="inline-flex items-center gap-1 rounded-xl bg-emerald-500/15 px-2.5 py-1.5 text-xs font-semibold text-emerald-800 hover:bg-emerald-700 hover:text-white dark:text-emerald-300 transition-colors"
+                      >
+                        <Eye className="h-3.5 w-3.5" />
+                        Monitor
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -257,6 +278,12 @@ export default function MonitoringPage() {
           </div>
         </Card>
       </div>
+
+      <InstansiMonitoringModal
+        open={!!monitoringInstansi}
+        onClose={() => setMonitoringInstansi(null)}
+        instansi={monitoringInstansi}
+      />
     </div>
   )
 }

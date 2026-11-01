@@ -5,12 +5,12 @@
 @theme {
   --font-sans: "Poppins", ui-sans-serif, system-ui, sans-serif;
 
-  /* Background */
-  --color-bg: #f8fafc;
+  /* Background (Argon Cool Alabaster & Deep Slate) */
+  --color-bg: #f8f9fe;
   --color-bg-dark: #0f172a;
   --color-surface: #ffffff;
   --color-surface-dark: #1e293b;
-  --color-border: #e2e8f0;
+  --color-border: #e9ecef;
   --color-border-dark: #334155;
 
   /* Text */
@@ -19,13 +19,18 @@
   --color-ink-muted: #64748b;
   --color-ink-muted-dark: #94a3b8;
 
-  /* Primary: Emerald */
+  /* Primary: Unified Deep Emerald (Matching Sidebar #065f46) */
   --color-emerald-50: #ecfdf5;
   --color-emerald-100: #d1fae5;
+  --color-emerald-200: #a7f3d0;
   --color-emerald-300: #6ee7b7;
+  --color-emerald-400: #34d399;
   --color-emerald-500: #10b981;
   --color-emerald-600: #059669;
   --color-emerald-700: #047857;
+  --color-emerald-800: #065f46;
+  --color-emerald-900: #064e3b;
+  --color-emerald-950: #022c22;
 
   /* Secondary: Slate */
   --color-slate-100: #f1f5f9;
@@ -35,14 +40,26 @@
   --color-slate-900: #0f172a;
 
   /* Status */
-  --color-success: #22c55e;
-  --color-success-100: #dcfce7;
+  --color-success: #10b981;
+  --color-success-100: #d1fae5;
   --color-warning: #f59e0b;
   --color-warning-100: #fef3c7;
   --color-danger: #ef4444;
   --color-danger-100: #fee2e2;
 
-  --shadow-soft: 0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 24px -12px rgba(16, 185, 129, 0.18);
+  --shadow-soft: 0 0 2rem 0 rgba(136, 152, 170, 0.15);
+  --shadow-argon: 0 0 2rem 0 rgba(136, 152, 170, 0.15);
+  --shadow-argon-sm: 0 0 0.75rem 0 rgba(136, 152, 170, 0.1);
+  --shadow-argon-hover: 0 10px 20px rgba(50, 50, 93, 0.11), 0 4px 8px rgba(0, 0, 0, 0.07);
+}
+
+/* Argon Design System Utilities */
+.argon-lift {
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
+}
+.argon-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-argon-hover);
 }
 
 html {
@@ -81,11 +98,28 @@ button {
   appearance: none;
 }
 
-/* iOS Safari auto-zooms the page when a focused input's font-size is
-   below 16px. This breaks the layout on focus (page jumps/zooms and the
-   submit button can end up out of view) — a common cause of "can't log
-   in on iPhone" reports. Force 16px on small screens only; desktop still
-   uses the smaller text-sm defined via Tailwind classes. */
+/* Fix browser autofill background mismatch in Light & Dark Mode */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+  -webkit-text-fill-color: var(--color-ink) !important;
+  -webkit-box-shadow: 0 0 0px 1000px #ffffff inset !important;
+  caret-color: var(--color-ink);
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+.dark input:-webkit-autofill,
+.dark input:-webkit-autofill:hover,
+.dark input:-webkit-autofill:focus,
+.dark textarea:-webkit-autofill,
+.dark select:-webkit-autofill {
+  -webkit-text-fill-color: var(--color-ink-dark) !important;
+  -webkit-box-shadow: 0 0 0px 1000px #0f172a inset !important;
+  caret-color: var(--color-ink-dark);
+}
+
 @media (max-width: 767px) {
   input,
   select,
@@ -94,8 +128,6 @@ button {
   }
 }
 
-/* Safe-area padding helpers for iPhone notch / home indicator, used when
-   the app runs standalone (installed as PWA) with viewport-fit=cover */
 .safe-top {
   padding-top: env(safe-area-inset-top);
 }
@@ -132,7 +164,7 @@ button {
 
 /* Custom scrollbar utilities */
 .scrollbar-thin {
-  scrollbar-width: auto; /* Firefox - visible standard width */
+  scrollbar-width: auto;
 }
 .scrollbar-thin::-webkit-scrollbar {
   width: 8px;
@@ -151,7 +183,6 @@ button {
   background-color: rgba(255, 255, 255, 0.55);
 }
 
-/* Ensure pointer cursor on buttons and links */
 button,
 a,
 [role="button"],

@@ -179,7 +179,6 @@ export default function SystemSettingsPage() {
 
   const tabs = [
     { id: 'umum', label: 'Branding & Lokal', icon: Palette, description: 'Nama aplikasi, logo, warna, bahasa & timezone' },
-    { id: 'rekening', label: 'Rekening Nasional', icon: Building2, description: 'Nomor rekening pusat yayasan SIQURBAN' },
     { id: 'infra', label: 'Supabase & Email', icon: Server, description: 'Pengaturan server database, storage & SMTP' },
     { id: 'notifikasi', label: 'WhatsApp Gateway', icon: MessageSquare, description: 'Notifikasi otomatis transaksi jamaah' },
     { id: 'pemeliharaan', label: 'Backup & Maintenance', icon: ShieldAlert, description: 'Jadwal backup, retensi & maintenance mode' },
@@ -196,31 +195,31 @@ export default function SystemSettingsPage() {
   return (
     <div className="space-y-6 pb-12">
       {/* HEADER PAGE */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-emerald-800/20 dark:border-emerald-700/30 pb-5">
+      <div className="rounded-2xl border border-border/80 dark:border-border-dark bg-surface dark:bg-surface-dark p-5 shadow-argon flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/15 px-2.5 py-0.5 text-xs font-semibold text-amber-400 border border-amber-400/30">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/15 px-2.5 py-0.5 text-xs font-semibold text-amber-600 dark:text-amber-400 border border-amber-500/30">
               <ShieldCheck className="h-3.5 w-3.5" />
               Super Admin Only
             </span>
-            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-xs font-semibold text-emerald-400 border border-emerald-400/30">
+            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400 border border-emerald-500/30">
               <Sparkles className="h-3.5 w-3.5" />
               Modul 7
             </span>
           </div>
-          <h1 className="mt-2 text-2xl font-bold tracking-tight text-ink dark:text-white sm:text-3xl">
+          <h1 className="mt-2 text-xl font-bold tracking-tight text-ink dark:text-white sm:text-2xl">
             Pengaturan Sistem Nasional
           </h1>
-          <p className="mt-1 text-sm text-emerald-700 dark:text-emerald-300/80">
+          <p className="mt-1 text-xs sm:text-sm text-ink-muted dark:text-ink-muted-dark">
             Kelola identitas aplikasi, integrasi payment gateway, server database, email SMTP, WhatsApp, dan mode pemeliharaan.
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 shrink-0">
           <button
             type="button"
             onClick={fetchSettings}
-            className="inline-flex items-center gap-2 rounded-xl border border-emerald-700/60 bg-white dark:bg-emerald-900/40 px-4 py-2.5 text-sm font-medium text-emerald-700 dark:text-emerald-200 shadow-sm hover:bg-emerald-50 dark:hover:bg-emerald-800/50 transition-colors"
+            className="inline-flex items-center gap-2 rounded-xl border border-border dark:border-border-dark bg-bg dark:bg-slate-800 px-4 py-2.5 text-sm font-medium text-ink dark:text-white shadow-2xs hover:bg-emerald-50 dark:hover:bg-slate-700 transition-colors"
           >
             <RefreshCw className="h-4 w-4" />
             Muat Ulang
@@ -229,7 +228,7 @@ export default function SystemSettingsPage() {
             type="button"
             onClick={handleSave}
             disabled={saving}
-            className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-soft hover:bg-emerald-500 disabled:opacity-50 transition-all duration-200"
+            className="argon-lift inline-flex items-center gap-2 rounded-xl bg-gradient-to-tl from-emerald-800 to-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:from-emerald-900 hover:to-emerald-700 disabled:opacity-50 transition-all duration-200"
           >
             {saving ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
             {saving ? 'Menyimpan...' : 'Simpan Pengaturan'}
@@ -238,7 +237,7 @@ export default function SystemSettingsPage() {
       </div>
 
       {/* TABS NAVIGATION */}
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
         {tabs.map((tab) => {
           const Icon = tab.icon
           const isActive = activeTab === tab.id
@@ -250,16 +249,16 @@ export default function SystemSettingsPage() {
               className={cn(
                 'flex flex-col items-start rounded-2xl border p-3.5 text-left transition-all duration-200',
                 isActive
-                  ? 'border-emerald-500 bg-emerald-600 text-white shadow-md'
-                  : 'border-emerald-800/30 bg-white dark:bg-emerald-950/40 text-ink dark:text-emerald-100 hover:border-emerald-500/50 hover:bg-emerald-50/50 dark:hover:bg-emerald-900/30',
+                  ? 'border-emerald-700 bg-emerald-800 text-white shadow-md'
+                  : 'border-border dark:border-border-dark bg-white dark:bg-surface-dark text-ink dark:text-emerald-100 hover:border-emerald-600/50 hover:bg-emerald-50/50 dark:hover:bg-slate-800',
               )}
             >
               <div
                 className={cn(
                   'mb-2.5 rounded-xl p-2',
                   isActive
-                    ? 'bg-emerald-700 text-white'
-                    : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300',
+                    ? 'bg-emerald-900/70 text-white'
+                    : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-300',
                 )}
               >
                 <Icon className="h-5 w-5" />
@@ -268,7 +267,7 @@ export default function SystemSettingsPage() {
               <span
                 className={cn(
                   'mt-0.5 text-[11px] line-clamp-1',
-                  isActive ? 'text-emerald-100' : 'text-emerald-600 dark:text-emerald-400',
+                  isActive ? 'text-emerald-100' : 'text-ink-muted dark:text-ink-muted-dark',
                 )}
               >
                 {tab.description}

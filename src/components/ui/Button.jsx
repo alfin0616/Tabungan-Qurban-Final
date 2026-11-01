@@ -3,12 +3,16 @@ import { Loader2 } from 'lucide-react'
 import { cn } from '../../lib/cn'
 
 const variants = {
-  primary: 'bg-emerald-600 text-white hover:bg-emerald-700 focus-visible:outline-emerald-600',
-  warning: 'bg-warning text-white hover:bg-warning/90 focus-visible:outline-warning',
+  primary:
+    'bg-gradient-to-tl from-emerald-800 to-emerald-600 text-white shadow-sm hover:from-emerald-900 hover:to-emerald-700 hover:shadow-md focus-visible:outline-emerald-700',
+  warning:
+    'bg-gradient-to-tl from-amber-500 to-orange-400 text-white shadow-sm hover:opacity-95 hover:shadow-md focus-visible:outline-warning',
   outline:
-    'border border-border dark:border-border-dark bg-white dark:bg-surface-dark text-ink dark:text-ink-dark hover:border-emerald-500 hover:text-emerald-600',
-  ghost: 'text-ink-muted dark:text-ink-muted-dark hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-slate-700 dark:hover:text-emerald-400',
-  danger: 'bg-danger text-white hover:bg-danger/90',
+    'border border-border dark:border-border-dark bg-white dark:bg-surface-dark text-ink dark:text-ink-dark shadow-2xs hover:border-emerald-700 hover:text-emerald-700',
+  ghost:
+    'text-ink-muted dark:text-ink-muted-dark hover:bg-emerald-50 hover:text-emerald-800 dark:hover:bg-slate-700 dark:hover:text-emerald-400',
+  danger:
+    'bg-gradient-to-tl from-rose-600 to-pink-500 text-white shadow-sm hover:opacity-95 hover:shadow-md',
 }
 
 const sizes = {

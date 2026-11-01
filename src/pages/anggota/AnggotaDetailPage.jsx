@@ -1,19 +1,22 @@
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { ArrowLeft, Wallet, Target, Phone, MapPin, Calendar } from 'lucide-react'
+import { ArrowLeft, Wallet, Target, Phone, MapPin, Calendar, CalendarClock, MessageCircle } from 'lucide-react'
 import { useAnggotaDetail } from '../../hooks/useAnggota'
 import { useTabunganByAnggota } from '../../hooks/useTabungan'
 import { useRiwayatTransaksi } from '../../hooks/useTransaksi'
+import { useAuth } from '../../context/AuthContext'
 import { Card, CardHeader, CardTitle } from '../../components/ui/Card'
 import Avatar from '../../components/ui/Avatar'
 import Badge from '../../components/ui/Badge'
 import Spinner from '../../components/ui/Spinner'
 import EmptyState from '../../components/ui/EmptyState'
-import { formatCurrency } from '../../utils/formatCurrency'
+import { formatCurrency, calculateSkemaTabungan } from '../../utils/formatCurrency'
 import { formatDate } from '../../utils/formatDate'
+import { sendDirectWhatsAppReminder } from '../../utils/whatsappReminder'
 
 export default function AnggotaDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const { isAdmin, instansiSaya } = useAuth()
 
   const { data: anggota, isLoading: loadingAnggota } = useAnggotaDetail(id)
   const { data: tabungan, isLoading: loadingTabungan } = useTabunganByAnggota(id)
@@ -33,6 +36,13 @@ export default function AnggotaDetailPage() {
 
   const persentase =
     tabungan?.target > 0 ? Math.min(100, Math.round((tabungan.saldo / tabungan.target) * 100)) : 0
+
+  const skema = calculateSkemaTabungan({
+    target: tabungan?.target || 3000000,
+    saldo: tabungan?.saldo || 0,
+    periode: tabungan?.periode_setoran || anggota?.periode_setoran || 'bulanan',
+    lamaBulan: tabungan?.lama_tabungan || anggota?.lama_tabungan || 12,
+  })
 
   return (
     <div className="space-y-4">
@@ -70,7 +80,7 @@ export default function AnggotaDetailPage() {
         </div>
       </Card>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Card>
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
@@ -93,6 +103,21 @@ export default function AnggotaDetailPage() {
               <p className="text-sm text-ink-muted dark:text-ink-muted-dark">Target Qurban</p>
               <p className="text-xl font-bold text-ink dark:text-ink-dark">
                 {loadingTabungan ? '—' : `${formatCurrency(tabungan?.target)} (${persentase}%)`}
+              </p>
+            </div>
+          </div>
+        </Card>
+        <Card>
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
+              <CalendarClock className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-sm text-ink-muted dark:text-ink-muted-dark">
+                Skema ({skema.periode === 'mingguan' ? 'Mingguan' : 'Bulanan'} • {skema.lamaBulan} Bln)
+              </p>
+              <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
+                {formatCurrency(skema.nominalPerPeriode)} / {skema.labelPeriode}
               </p>
             </div>
           </div>
@@ -141,13 +166,40 @@ export default function AnggotaDetailPage() {
         )}
       </Card>
 
-      <Link
-        to="/transaksi/setoran"
-        state={{ anggotaId: anggota.id }}
-        className="inline-block text-sm font-medium text-emerald-600 hover:underline"
-      >
-        + Catat setoran untuk anggota ini
-      </Link>
+      <div className="flex flex-wrap items-center gap-3">
+        <Link
+          to="/transaksi/setoran"
+          state={{ anggotaId: anggota.id }}
+          className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-700 px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-emerald-800 transition-colors"
+        >
+          + Catat Setoran Anggota Ini
+        </Link>
+
+        {isAdmin && (
+          <button
+            type="button"
+            onClick={() =>
+              sendDirectWhatsAppReminder({
+                anggotaId: anggota.id,
+                noHp: anggota.no_hp,
+                nama: anggota.nama,
+                kodeAnggota: anggota.kode_anggota,
+                namaInstansi: instansiSaya?.nama_instansi,
+                periode: skema.periode,
+                lamaBulan: skema.lamaBulan,
+                saldo: tabungan?.saldo || 0,
+                target: tabungan?.target || 3000000,
+                rekeningInstansi: instansiSaya,
+                jenisPesan: 'rutin',
+              })
+            }
+            className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-500/30 bg-emerald-50 dark:bg-emerald-950/40 px-4 py-2 text-xs font-bold text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 transition-colors cursor-pointer"
+          >
+            <MessageCircle className="h-4 w-4" />
+            Ingatkan Pembayaran ke WhatsApp
+          </button>
+        )}
+      </div>
     </div>
   )
 }

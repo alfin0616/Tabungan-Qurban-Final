@@ -1,4 +1,5 @@
 import { Outlet } from 'react-router-dom'
+import { Building2, Users, ShieldCheck } from 'lucide-react'
 import { useSettings } from '../../hooks/useSettings'
 import logoSQNn from '../../assets/SQNn.png'
 
@@ -8,62 +9,108 @@ export default function AuthLayout() {
   const appName = settings?.app_name || 'SIQURBAN'
 
   return (
-    <div className="grid min-h-dvh w-full max-w-full overflow-x-hidden lg:grid-cols-2">
-      {/* Panel kiri: hanya tampil di layar besar (desktop) */}
-      <div className="relative hidden flex-col justify-between overflow-hidden bg-emerald-700 p-10 text-white lg:flex">
-        <div className="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-emerald-600/50 blur-3xl" />
-        <div className="absolute -bottom-32 -left-16 h-80 w-80 rounded-full bg-warning/20 blur-3xl" />
+    <div className="grid min-h-dvh w-full max-w-full overflow-x-hidden bg-bg dark:bg-bg-dark lg:grid-cols-12">
+      {/* Panel Kiri: Hero Argon Deep Emerald (Tampil di Desktop) */}
+      <div className="relative hidden flex-col justify-between overflow-hidden bg-gradient-to-br from-emerald-950 via-emerald-800 to-emerald-700 p-10 xl:p-12 text-white lg:col-span-5 lg:flex xl:col-span-6">
+        {/* Dekorasi Cahaya Argon */}
+        <div className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full bg-emerald-500/20 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-32 -left-16 h-96 w-96 rounded-full bg-emerald-400/15 blur-3xl" />
 
-        <div className="relative flex items-center gap-2.5">
-          <img
-            src={logoUrl}
-            alt={appName}
-            className="h-11 w-11 rounded-full object-cover ring-2 ring-white/20"
-            onError={(e) => { e.target.src = logoSQNn }}
-          />
-          <span className="text-lg font-bold">{appName}</span>
+        {/* Brand Header */}
+        <div className="relative flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <img
+              src={logoUrl}
+              alt={appName}
+              className="h-11 w-11 rounded-2xl bg-white/10 p-1 object-contain ring-2 ring-white/20 shadow-lg"
+              onError={(e) => {
+                e.target.src = logoSQNn
+              }}
+            />
+            <div>
+              <span className="block text-lg font-extrabold tracking-wide text-white">
+                {appName}
+              </span>
+              <span className="block text-[11px] font-medium text-emerald-200">
+                Sistem Manajemen Tabungan Qurban
+              </span>
+            </div>
+          </div>
         </div>
 
-        <div className="relative space-y-4">
-          <p className="text-4xl font-semibold leading-tight">
+        {/* Konten Utama Hero */}
+        <div className="relative my-auto space-y-6 py-8">
+          <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-900/50 px-3.5 py-1.5 text-xs font-semibold text-emerald-100 backdrop-blur-sm">
+            <ShieldCheck className="h-4 w-4 text-emerald-300" />
+            Platform Qurban Terpadu &amp; Transparan
+          </div>
+
+          <h2 className="text-3xl xl:text-4xl font-extrabold leading-tight tracking-tight text-white">
             Kelola tabungan qurban jamaah dengan tenang &amp; tertata.
+          </h2>
+
+          <p className="max-w-md text-sm leading-relaxed text-emerald-100/90">
+            Satu tempat terintegrasi untuk mencatat setoran, memantau kuota anggota kelompok,
+            dan menyajikan laporan keuangan qurban secara transparan.
           </p>
-          <p className="max-w-sm text-sm text-emerald-100">
-            Satu tempat untuk mencatat setoran, memantau target, dan menyiapkan laporan setiap
-            musim qurban tiba.
-          </p>
+
+          {/* Highlight Fitur Argon */}
+          <div className="grid grid-cols-1 gap-3 pt-2 max-w-md">
+            <div className="flex items-center gap-3.5 rounded-2xl border border-white/10 bg-white/10 p-3.5 backdrop-blur-sm">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500/25 text-emerald-200">
+                <Building2 className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-white">Multi-Masjid &amp; Instansi Resmi</p>
+                <p className="text-[11px] text-emerald-100/80">
+                  Setiap instansi memiliki nomor rekening dan manajemen kelompok mandiri.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3.5 rounded-2xl border border-white/10 bg-white/10 p-3.5 backdrop-blur-sm">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500/25 text-emerald-200">
+                <Users className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-white">Kelompok Qurban Transparan</p>
+                <p className="text-[11px] text-emerald-100/80">
+                  Jamaah dapat melihat daftar rekan satu kelompok dan progres tabungan.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <p className="relative text-xs text-emerald-200">
-          © {new Date().getFullYear()} {appName}. Dibuat untuk kemudahan pengurus masjid.
+        {/* Footer */}
+        <p className="relative text-xs text-emerald-200/80">
+          © {new Date().getFullYear()} {appName}. Dibuat untuk kemudahan jamaah &amp; pengurus qurban.
         </p>
       </div>
 
-      {/* Sisi kanan (desktop) / seluruh layar (mobile) */}
-      <div className="relative flex min-h-dvh min-w-0 flex-col overflow-hidden w-full max-w-full bg-gradient-to-b from-emerald-700 via-emerald-600 to-bg dark:to-bg-dark lg:bg-none lg:bg-bg lg:dark:bg-bg-dark">
-        {/* Dekorasi blur, hanya relevan di mobile */}
-        <div className="pointer-events-none absolute -right-16 -top-20 h-64 w-64 rounded-full bg-emerald-400/30 blur-3xl lg:hidden" />
-        <div className="pointer-events-none absolute left-1/2 top-40 h-56 w-56 -translate-x-1/2 rounded-full bg-warning/20 blur-3xl lg:hidden" />
-
-        {/* Header bermerek — mobile only */}
-        <div className="safe-top relative flex flex-col items-center gap-3 px-6 pb-10 pt-12 text-center text-white lg:hidden">
+      {/* Sisi Kanan: Area Form Card Argon */}
+      <div className="relative flex min-h-dvh min-w-0 flex-col justify-between overflow-y-auto w-full lg:col-span-7 xl:col-span-6">
+        {/* Banner Header Mobile */}
+        <div className="safe-top relative flex flex-col items-center gap-2.5 bg-gradient-to-br from-emerald-950 via-emerald-800 to-emerald-700 px-6 pb-14 pt-8 text-center text-white lg:hidden">
           <img
             src={logoUrl}
             alt={appName}
-            className="h-16 w-16 rounded-full object-cover ring-4 ring-white/20 shadow-lg"
-            onError={(e) => { e.target.src = logoSQNn }}
+            className="h-14 w-14 rounded-2xl bg-white/10 p-1 object-contain ring-2 ring-white/20 shadow-lg"
+            onError={(e) => {
+              e.target.src = logoSQNn
+            }}
           />
           <div>
-            <p className="text-xl font-bold">{appName}</p>
-            <p className="mt-1 text-sm text-emerald-50">
+            <p className="text-lg font-extrabold tracking-wide">{appName}</p>
+            <p className="mt-0.5 text-xs text-emerald-100">
               Kelola tabungan qurban jamaah dengan tenang &amp; tertata
             </p>
           </div>
         </div>
 
-        {/* Kartu form — mengambang di atas gradient (mobile), polos di desktop */}
-        <div className="safe-bottom relative flex flex-1 items-start justify-center px-5 pb-10 lg:items-center lg:px-6 lg:py-12">
-          <div className="w-full max-w-sm rounded-3xl bg-surface p-6 shadow-2xl shadow-emerald-900/10 dark:bg-surface-dark dark:shadow-none sm:p-8 lg:rounded-none lg:bg-transparent lg:p-0 lg:shadow-none">
+        {/* Container Kartu Form */}
+        <div className="safe-bottom relative -mt-8 flex flex-1 items-start justify-center px-4 pb-10 sm:px-6 lg:mt-0 lg:items-center lg:py-10">
+          <div className="w-full max-w-[460px] rounded-3xl border border-border/80 dark:border-border-dark bg-surface dark:bg-surface-dark p-6 sm:p-8 shadow-argon">
             <Outlet />
           </div>
         </div>

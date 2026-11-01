@@ -1,5 +1,64 @@
 import { supabase } from '../api/supabaseClient'
 
+const READ_NOTIF_STORAGE_KEY = 'siqurban_read_notifications_v1'
+const MARK_ALL_READ_AT_KEY = 'siqurban_mark_all_read_at_v1'
+
+function getLocalReadIds() {
+  try {
+    const raw = localStorage.getItem(READ_NOTIF_STORAGE_KEY)
+    const arr = raw ? JSON.parse(raw) : []
+    return new Set(Array.isArray(arr) ? arr : [])
+  } catch {
+    return new Set()
+  }
+}
+
+function addLocalReadIds(ids = []) {
+  try {
+    const set = getLocalReadIds()
+    ids.forEach((id) => {
+      if (id) set.add(String(id))
+    })
+    // Batasi maksimal 500 ID terakhir agar storage tetap ringan
+    const arr = Array.from(set).slice(-500)
+    localStorage.setItem(READ_NOTIF_STORAGE_KEY, JSON.stringify(arr))
+  } catch {
+    // ignore storage errors
+  }
+}
+
+function getMarkAllReadTimestamp() {
+  try {
+    const val = localStorage.getItem(MARK_ALL_READ_AT_KEY)
+    return val ? new Date(val).getTime() : 0
+  } catch {
+    return 0
+  }
+}
+
+function setMarkAllReadTimestamp(isoString = new Date().toISOString()) {
+  try {
+    localStorage.setItem(MARK_ALL_READ_AT_KEY, isoString)
+  } catch {
+    // ignore storage errors
+  }
+}
+
+export function isNotificationRead(notif) {
+  if (!notif) return true
+  if (notif.read === true) return true
+  const readSet = getLocalReadIds()
+  if (notif.id && readSet.has(String(notif.id))) return true
+  const markAllTs = getMarkAllReadTimestamp()
+  if (markAllTs > 0 && notif.created_at) {
+    const createdTs = new Date(notif.created_at).getTime()
+    if (!Number.isNaN(createdTs) && createdTs <= markAllTs) {
+      return true
+    }
+  }
+  return false
+}
+
 export const NOTIFICATION_TYPES = {
   PEMBAYARAN_BERHASIL: 'pembayaran_berhasil',
   PEMBAYARAN_PENDING: 'pembayaran_pending',
@@ -15,7 +74,7 @@ export const NOTIFICATION_TYPES = {
 
 export const notificationRepository = {
   /**
-   * Mengambil daftar notifikasi terbaru
+   * Mengambil daftar notifikasi terbaru dan menyelaraskan status dibaca (DB + LocalStorage)
    */
   getNotifications: async (limit = 20) => {
     try {
@@ -26,65 +85,80 @@ export const notificationRepository = {
         .limit(limit)
 
       if (error) throw error
-      return data || []
+      return (data || []).map((item) => ({
+        ...item,
+        read: isNotificationRead(item),
+      }))
     } catch {
       return []
     }
   },
 
   /**
-   * Hitung jumlah notifikasi yang belum dibaca
+   * Hitung jumlah notifikasi yang belum dibaca secara akurat
    */
   getUnreadCount: async () => {
     try {
-      const { count, error } = await supabase
+      const { data, error } = await supabase
         .from('notifications')
-        .select('id', { count: 'exact', head: true })
+        .select('id, read, created_at')
         .eq('read', false)
+        .order('created_at', { ascending: false })
+        .limit(50)
 
       if (error) throw error
-      return count || 0
+      const unreadItems = (data || []).filter((item) => !isNotificationRead(item))
+      return unreadItems.length
     } catch {
       return 0
     }
   },
 
   /**
-   * Tandai 1 notifikasi sebagai sudah dibaca
+   * Tandai 1 notifikasi sebagai sudah dibaca (tersimpan permanen di LocalStorage & DB)
    */
   markAsRead: async (id) => {
+    if (!id) return
+    addLocalReadIds([id])
     try {
-      const { error } = await supabase
+      await supabase
         .from('notifications')
         .update({ read: true })
         .eq('id', id)
-
-      if (error) throw error
     } catch {
-      // Ignore
+      // Ignore if RLS blocks global notification row update; local read state is already saved
     }
   },
 
   /**
-   * Tandai semua notifikasi sebagai sudah dibaca
+   * Tandai semua notifikasi sebagai sudah dibaca (tersimpan permanen di LocalStorage & DB)
    */
-  markAllAsRead: async () => {
+  markAllAsRead: async (currentNotifications = []) => {
+    setMarkAllReadTimestamp(new Date().toISOString())
+    if (Array.isArray(currentNotifications) && currentNotifications.length > 0) {
+      addLocalReadIds(currentNotifications.map((n) => n.id))
+    }
     try {
-      const { error } = await supabase
+      await supabase
         .from('notifications')
         .update({ read: true })
         .eq('read', false)
-
-      if (error) throw error
     } catch {
-      // Ignore
+      // Ignore if RLS blocks global notification row update; local read state is already saved
     }
   },
 
   /**
    * Buat notifikasi baru secara manual dengan jenis_notifikasi
    */
-  createNotification: async ({ title, message, jenisNotifikasi = 'system_announcement', link = null, instansiId = null, userId = null }) => {
+  createNotification: async ({
+    title,
+    message,
+    jenisNotifikasi = 'system_announcement',
+    link = null,
+    instansiId = null,
+    userId = null,
+  }) => {
     try {
       const { error } = await supabase.from('notifications').insert({
         title,
@@ -104,26 +178,32 @@ export const notificationRepository = {
   /**
    * Subscribe ke Supabase Realtime Channel untuk notifikasi instan
    */
-  subscribeRealtimeNotifications: (onNotificationReceived) => {
+  subscribeRealtimeNotifications: (onInsert, onUpdate) => {
     const channel = supabase
       .channel('public:notifications')
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'notifications' },
         (payload) => {
-          if (onNotificationReceived) {
-            onNotificationReceived(payload.new)
+          if (onInsert && payload.new) {
+            onInsert({
+              ...payload.new,
+              read: isNotificationRead(payload.new),
+            })
           }
-        }
+        },
       )
       .on(
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'notifications' },
         (payload) => {
-          if (onNotificationReceived) {
-            onNotificationReceived(payload.new)
+          if (onUpdate && payload.new) {
+            onUpdate({
+              ...payload.new,
+              read: isNotificationRead(payload.new),
+            })
           }
-        }
+        },
       )
       .subscribe()
 
@@ -137,7 +217,8 @@ export const notificationRepository = {
 // WEB PUSH NOTIFICATION
 // ============================================================================
 
-const PUBLIC_VAPID_KEY = 'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBUYIHBQFLXYp5Nksh8U'
+const PUBLIC_VAPID_KEY =
+  'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBUYIHBQFLXYp5Nksh8U'
 
 function urlBase64ToUint8Array(base64String) {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4)
@@ -168,8 +249,7 @@ export async function subscribeToPushNotifications() {
 
   try {
     const registration = await navigator.serviceWorker.ready
-    
-    // Cek apakah sudah subscribe
+
     let subscription = await registration.pushManager.getSubscription()
     if (!subscription) {
       subscription = await registration.pushManager.subscribe({
@@ -179,11 +259,16 @@ export async function subscribeToPushNotifications() {
     }
 
     const { endpoint } = subscription
-    const p256dh = btoa(String.fromCharCode.apply(null, new Uint8Array(subscription.getKey('p256dh'))))
-    const auth = btoa(String.fromCharCode.apply(null, new Uint8Array(subscription.getKey('auth'))))
+    const p256dh = btoa(
+      String.fromCharCode.apply(null, new Uint8Array(subscription.getKey('p256dh'))),
+    )
+    const auth = btoa(
+      String.fromCharCode.apply(null, new Uint8Array(subscription.getKey('auth'))),
+    )
 
-    // Simpan ke Supabase
-    const { data: { user } } = await supabase.auth.getUser()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
     if (user) {
       await supabase.from('user_push_subscriptions').upsert(
         {
@@ -193,7 +278,7 @@ export async function subscribeToPushNotifications() {
           auth,
           user_agent: navigator.userAgent,
         },
-        { onConflict: 'endpoint' }
+        { onConflict: 'endpoint' },
       )
     }
 
@@ -203,4 +288,3 @@ export async function subscribeToPushNotifications() {
     return null
   }
 }
-

@@ -65,7 +65,7 @@ const statusOptions = [
 const PAGE_SIZE = 20
 
 export default function LaporanPage() {
-  const { isSuperAdmin } = useAuth()
+  const { isSuperAdmin, instansiSaya } = useAuth()
   const { data: settings } = useSettings()
 
   // ---- Filter State ----
@@ -139,7 +139,9 @@ export default function LaporanPage() {
     ]),
   ]
 
-  const exportTitle = `Laporan ${periodeOptions.find((p) => p.value === periode)?.label ?? ''} - ${settings?.nama_instansi ?? 'SIQURBAN'}`
+  const namaInstansiLaporan =
+    instansiSaya?.nama_instansi ?? settings?.nama_instansi ?? 'SIQURBAN'
+  const exportTitle = `Laporan ${periodeOptions.find((p) => p.value === periode)?.label ?? ''} - ${namaInstansiLaporan}`
   const exportSubtitle = data ? `Periode ${formatDate(data.range.start)} – ${formatDate(data.range.end)}` : ''
 
   const summaryData = [
@@ -153,7 +155,15 @@ export default function LaporanPage() {
   async function handleExportPdf() {
     if (isEmpty) return toast.error('Tidak ada data untuk diekspor')
     try {
-      await exportLaporanPdf({ title: exportTitle, subtitle: exportSubtitle, columns, rows, summary: summaryData })
+      await exportLaporanPdf({
+        title: exportTitle,
+        subtitle: exportSubtitle,
+        namaInstansi: namaInstansiLaporan,
+        alamatInstansi: instansiSaya?.alamat || '',
+        columns,
+        rows,
+        summary: summaryData,
+      })
       toast.success('PDF berhasil diunduh')
     } catch (e) {
       toast.error('Gagal mengekspor PDF')

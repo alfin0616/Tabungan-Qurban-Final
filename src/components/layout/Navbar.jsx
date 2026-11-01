@@ -1,16 +1,15 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Menu, LogOut, User, ChevronDown, Search, Moon, Sun, Maximize2, Minimize2 } from 'lucide-react'
+import { Menu, LogOut, User, ChevronDown, Moon, Sun, Maximize2, Minimize2 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { useTheme } from '../../context/ThemeContext'
 import Avatar from '../ui/Avatar'
 import Badge from '../ui/Badge'
 import NotificationDropdown from './NotificationDropdown'
 import toast from 'react-hot-toast'
-
 import SmartSearchInput from './SmartSearchInput'
 
-export default function Navbar({ onMenuClick, title, onSearch }) {
+export default function Navbar({ onMenuClick, onToggleCollapsed, collapsed, title, onSearch }) {
   const { user, profile, logout, isAdmin, isSuperAdmin } = useAuth()
   const { isDark, toggleTheme } = useTheme()
   const navigate = useNavigate()
@@ -48,14 +47,28 @@ export default function Navbar({ onMenuClick, title, onSearch }) {
   return (
     <header className="sticky top-0 z-20 flex h-16 items-center justify-between gap-4 border-b border-border dark:border-border-dark bg-surface/90 dark:bg-surface-dark/90 px-4 backdrop-blur lg:px-6">
       <div className="flex items-center gap-3">
-        {(isAdmin || isSuperAdmin) && (
+        {/* Mobile Hamburger */}
+        <button
+          onClick={onMenuClick}
+          title="Buka Menu"
+          aria-label="Buka Menu"
+          className="rounded-xl p-2 text-ink-muted dark:text-ink-muted-dark hover:bg-emerald-50 hover:text-emerald-800 dark:hover:bg-slate-700 lg:hidden transition-colors"
+        >
+          <Menu className="h-5 w-5" />
+        </button>
+
+        {/* Desktop Hamburger (Perbesar / Perkecil Sidebar) */}
+        {onToggleCollapsed && (
           <button
-            onClick={onMenuClick}
-            className="rounded-lg p-2 text-ink-muted dark:text-ink-muted-dark hover:bg-emerald-50 dark:hover:bg-slate-700 lg:hidden"
+            onClick={onToggleCollapsed}
+            title={collapsed ? 'Perbesar Menu Sidebar' : 'Perkecil Menu Sidebar'}
+            aria-label={collapsed ? 'Perbesar Menu Sidebar' : 'Perkecil Menu Sidebar'}
+            className="hidden lg:inline-flex rounded-xl p-2 text-ink-muted dark:text-ink-muted-dark hover:bg-emerald-50 hover:text-emerald-800 dark:hover:bg-slate-700 transition-colors"
           >
             <Menu className="h-5 w-5" />
           </button>
         )}
+
         <h1 className="hidden text-lg font-semibold text-ink dark:text-ink-dark sm:block">{title}</h1>
       </div>
 

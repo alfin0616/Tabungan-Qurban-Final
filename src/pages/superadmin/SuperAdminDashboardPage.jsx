@@ -1,4 +1,5 @@
 import { memo } from 'react'
+import { Link } from 'react-router-dom'
 import {
   Building2,
   Users,
@@ -8,15 +9,11 @@ import {
   Receipt,
   TrendingUp,
   TrendingDown,
-  Crown,
-  Trophy,
-  Award,
   ArrowDownCircle,
   ArrowUpCircle,
   Calendar,
   CalendarDays,
-  UserCheck,
-  Sparkles,
+  ArrowUpRight,
 } from 'lucide-react'
 import {
   ResponsiveContainer,
@@ -47,9 +44,10 @@ import { Card, CardHeader, CardTitle } from '../../components/ui/Card'
 import Badge from '../../components/ui/Badge'
 import Spinner from '../../components/ui/Spinner'
 import EmptyState from '../../components/ui/EmptyState'
-import { formatCurrency } from '../../utils/formatCurrency'
+import { formatCurrency, formatChartAxisCurrency } from '../../utils/formatCurrency'
 import { formatDate } from '../../utils/formatDate'
 import AiInsightCard from '../../components/dashboard/AiInsightCard'
+import WaPaymentReminderCard from '../../components/dashboard/WaPaymentReminderCard'
 
 // ─── Tooltip kustom untuk recharts ───────────────────────────────────────────
 const CustomTooltipCurrency = memo(function CustomTooltipCurrency({ active, payload, label }) {
@@ -103,9 +101,23 @@ const ProgressNasional = memo(function ProgressNasional({ saldo, target }) {
             style={{ width: `${pct}%` }}
           />
         </div>
-        <div className="flex justify-between text-xs text-ink-muted dark:text-ink-muted-dark">
-          <span>{formatCurrency(saldo)} terkumpul</span>
-          <span>Target {formatCurrency(target)}</span>
+        <div className="flex flex-wrap justify-between gap-2 text-xs text-ink-muted dark:text-ink-muted-dark">
+          <Link
+            to="/tabungan"
+            title="Klik untuk masuk ke menu Tabungan"
+            className="inline-flex items-center gap-1 font-bold text-emerald-600 dark:text-emerald-400 hover:underline"
+          >
+            {formatCurrency(saldo)} terkumpul
+            <ArrowUpRight className="h-3.5 w-3.5" />
+          </Link>
+          <Link
+            to="/kelompok"
+            title="Klik untuk masuk ke menu Kelompok & Target Qurban"
+            className="inline-flex items-center gap-1 font-bold text-ink dark:text-ink-dark hover:text-emerald-600 dark:hover:text-emerald-400 hover:underline"
+          >
+            Target {formatCurrency(target)}
+            <ArrowUpRight className="h-3.5 w-3.5" />
+          </Link>
         </div>
       </div>
     </Card>
@@ -153,8 +165,10 @@ const TransaksiRow = memo(function TransaksiRow({ item }) {
         </span>
       </td>
       <td className="py-3 text-right">
-        <span
-          className={`font-semibold text-sm ${
+        <Link
+          to="/transaksi/riwayat"
+          title="Klik nominal untuk membuka Riwayat Transaksi"
+          className={`inline-flex items-center justify-end gap-1 font-semibold text-sm hover:underline ${
             isSetoran
               ? 'text-emerald-600 dark:text-emerald-400'
               : 'text-danger'
@@ -162,7 +176,8 @@ const TransaksiRow = memo(function TransaksiRow({ item }) {
         >
           {isSetoran ? '+' : '−'}
           {formatCurrency(item.nominal)}
-        </span>
+          <ArrowUpRight className="h-3.5 w-3.5 opacity-70" />
+        </Link>
       </td>
     </tr>
   )
@@ -193,32 +208,32 @@ export default function SuperAdminDashboardPage() {
 
   return (
     <div className="space-y-6">
-      {/* ── Header ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-700 text-white shadow-soft">
+      {/* ── Header inside Argon Card ── */}
+      <div className="rounded-2xl border border-border/80 dark:border-border-dark bg-surface dark:bg-surface-dark p-5 shadow-argon flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3.5">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-tl from-emerald-800 to-emerald-600 text-white shadow-md shadow-emerald-900/20">
             <Building2 className="h-5 w-5" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-ink dark:text-ink-dark">Dashboard Analitik Super Admin</h2>
-            <p className="text-xs text-ink-muted dark:text-ink-muted-dark">
-              Monitoring analitik nasional lintas seluruh instansi
+            <h2 className="text-lg sm:text-xl font-bold text-ink dark:text-ink-dark">Dashboard Analitik Super Admin</h2>
+            <p className="text-xs sm:text-sm text-ink-muted dark:text-ink-muted-dark">
+              Monitoring analitik nasional lintas seluruh instansi, kelompok, dan anggota
             </p>
           </div>
         </div>
 
         {/* Growth Badges */}
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5 rounded-xl border border-border dark:border-border-dark bg-surface dark:bg-surface-dark px-3 py-1.5 text-xs shadow-sm">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-1.5 rounded-xl border border-border dark:border-border-dark bg-bg dark:bg-slate-800 px-3 py-1.5 text-xs shadow-2xs">
             <span className="text-ink-muted dark:text-ink-muted-dark">Growth Bulanan:</span>
-            <span className={`font-bold flex items-center gap-0.5 ${growthBulanan >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-danger'}`}>
+            <span className={`font-bold flex items-center gap-0.5 ${growthBulanan >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-danger'}`}>
               {growthBulanan >= 0 ? <TrendingUp className="h-3.5 w-3.5" /> : <TrendingDown className="h-3.5 w-3.5" />}
               {growthBulanan >= 0 ? `+${growthBulanan}%` : `${growthBulanan}%`}
             </span>
           </div>
-          <div className="flex items-center gap-1.5 rounded-xl border border-border dark:border-border-dark bg-surface dark:bg-surface-dark px-3 py-1.5 text-xs shadow-sm">
+          <div className="flex items-center gap-1.5 rounded-xl border border-border dark:border-border-dark bg-bg dark:bg-slate-800 px-3 py-1.5 text-xs shadow-2xs">
             <span className="text-ink-muted dark:text-ink-muted-dark">Growth Tahunan:</span>
-            <span className={`font-bold flex items-center gap-0.5 ${growthTahunan >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-danger'}`}>
+            <span className={`font-bold flex items-center gap-0.5 ${growthTahunan >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-danger'}`}>
               {growthTahunan >= 0 ? <TrendingUp className="h-3.5 w-3.5" /> : <TrendingDown className="h-3.5 w-3.5" />}
               {growthTahunan >= 0 ? `+${growthTahunan}%` : `${growthTahunan}%`}
             </span>
@@ -226,43 +241,55 @@ export default function SuperAdminDashboardPage() {
         </div>
       </div>
 
-      {/* ── Stat Cards (6) ── */}
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-6">
+      {/* ── Stat Cards (6) — Grid 3 Kolom Agar Nominal Terlihat Penuh & Dapat Diklik ke Menu Terkait ── */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <StatCard
           icon={Building2}
           tone="emerald"
           label="Total Instansi"
           value={loadingStats ? '—' : statistik?.total_instansi ?? 0}
+          hint="Klik untuk kelola data Instansi"
+          to="/superadmin/instansi"
         />
         <StatCard
           icon={Layers}
           tone="emerald"
           label="Total Kelompok"
           value={loadingStats ? '—' : statistik?.total_kelompok ?? 0}
+          hint="Klik untuk kelola Kelompok Qurban"
+          to="/kelompok"
         />
         <StatCard
           icon={Users}
           tone="emerald"
           label="Total Jamaah"
           value={loadingStats ? '—' : statistik?.total_jamaah ?? 0}
+          hint="Klik untuk lihat daftar Anggota"
+          to="/anggota"
         />
         <StatCard
           icon={Wallet}
           tone="warning"
-          label="Total Saldo"
+          label="Total Saldo Nasional"
           value={loadingStats ? '—' : formatCurrency(totalSaldo)}
+          hint="Klik nominal untuk menu Tabungan"
+          to="/tabungan"
         />
         <StatCard
           icon={Target}
           tone="emerald"
-          label="Total Target"
+          label="Total Target Qurban"
           value={loadingStats ? '—' : formatCurrency(totalTarget)}
+          hint="Klik nominal untuk menu Kelompok & Target"
+          to="/kelompok"
         />
         <StatCard
           icon={Receipt}
           tone="danger"
           label="Transaksi Bulan Ini"
           value={loadingStats ? '—' : statistik?.total_transaksi ?? 0}
+          hint="Klik untuk lihat Riwayat Transaksi"
+          to="/transaksi/riwayat"
         />
       </div>
 
@@ -271,6 +298,9 @@ export default function SuperAdminDashboardPage() {
 
       {/* ── Progress Nasional ── */}
       <ProgressNasional saldo={totalSaldo} target={totalTarget} />
+
+      {/* ── Pusat Pengingat Pembayaran Langsung ke WhatsApp ── */}
+      <WaPaymentReminderCard />
 
       {/* ── Grafik Setoran Harian & Grafik Setoran Bulanan ── */}
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
@@ -311,10 +341,12 @@ export default function SuperAdminDashboardPage() {
                     height={30}
                   />
                   <YAxis
+                    width={56}
+                    domain={[0, (dataMax) => Math.max(Number(dataMax) || 0, 1000000)]}
                     tick={{ fontSize: 11, fill: chartColors.tick }}
                     axisLine={false}
                     tickLine={false}
-                    tickFormatter={(v) => `${v / 1_000_000}jt`}
+                    tickFormatter={formatChartAxisCurrency}
                   />
                   <Tooltip content={<CustomTooltipCurrency />} />
                   <Area
@@ -369,10 +401,12 @@ export default function SuperAdminDashboardPage() {
                     height={40}
                   />
                   <YAxis
+                    width={56}
+                    domain={[0, (dataMax) => Math.max(Number(dataMax) || 0, 1000000)]}
                     tick={{ fontSize: 11, fill: chartColors.tick }}
                     axisLine={false}
                     tickLine={false}
-                    tickFormatter={(v) => `${v / 1_000_000}jt`}
+                    tickFormatter={formatChartAxisCurrency}
                   />
                   <Tooltip content={<CustomTooltipCurrency />} />
                   <Area
@@ -420,10 +454,12 @@ export default function SuperAdminDashboardPage() {
                     tickLine={false}
                   />
                   <YAxis
+                    width={56}
+                    domain={[0, (dataMax) => Math.max(Number(dataMax) || 0, 1000000)]}
                     tick={{ fontSize: 11, fill: chartColors.tick }}
                     axisLine={false}
                     tickLine={false}
-                    tickFormatter={(v) => `${v / 1_000_000}jt`}
+                    tickFormatter={formatChartAxisCurrency}
                   />
                   <Tooltip content={<CustomTooltipCurrency />} />
                   <Bar dataKey="total_setoran" fill={chartColors.bar} radius={[6, 6, 0, 0]} />

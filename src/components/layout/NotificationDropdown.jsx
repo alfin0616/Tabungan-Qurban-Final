@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Bell,
@@ -21,24 +21,25 @@ import {
 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { id } from 'date-fns/locale'
-import { notificationRepository } from '../../repositories/notificationRepository'
+import { notificationRepository, isNotificationRead } from '../../repositories/notificationRepository'
 import toast from 'react-hot-toast'
 
 export default function NotificationDropdown() {
   const [open, setOpen] = useState(false)
   const [notifications, setNotifications] = useState([])
-  const [unreadCount, setUnreadCount] = useState(0)
   const dropdownRef = useRef(null)
   const navigate = useNavigate()
 
+  // Hitung jumlah belum dibaca langsung dari state yang sudah tersinkronisasi
+  const unreadCount = useMemo(
+    () => notifications.filter((n) => !n.read && !isNotificationRead(n)).length,
+    [notifications],
+  )
+
   const loadNotifications = useCallback(async () => {
     try {
-      const [list, count] = await Promise.all([
-        notificationRepository.getNotifications(15),
-        notificationRepository.getUnreadCount(),
-      ])
+      const list = await notificationRepository.getNotifications(20)
       setNotifications(list)
-      setUnreadCount(count)
     } catch {
       // Ignore
     }
@@ -48,23 +49,33 @@ export default function NotificationDropdown() {
   useEffect(() => {
     loadNotifications()
 
-    const unsubscribe = notificationRepository.subscribeRealtimeNotifications((newNotif) => {
-      setNotifications((prev) => {
-        const exists = prev.find((n) => n.id === newNotif.id)
-        if (exists) {
-          return prev.map((n) => (n.id === newNotif.id ? newNotif : n))
-        }
-        return [newNotif, ...prev]
-      })
-
-      if (!newNotif.read) {
-        setUnreadCount((count) => count + 1)
-        toast(newNotif.title || 'Notifikasi Baru', {
-          icon: '🔔',
-          style: { borderRadius: '12px', background: '#10b981', color: '#fff' },
+    const unsubscribe = notificationRepository.subscribeRealtimeNotifications(
+      (insertedNotif) => {
+        setNotifications((prev) => {
+          const exists = prev.some((n) => n.id === insertedNotif.id)
+          if (exists) {
+            return prev.map((n) => (n.id === insertedNotif.id ? insertedNotif : n))
+          }
+          return [insertedNotif, ...prev]
         })
-      }
-    })
+
+        if (!insertedNotif.read) {
+          toast(insertedNotif.title || 'Notifikasi Baru', {
+            icon: '🔔',
+            style: { borderRadius: '12px', background: '#10b981', color: '#fff' },
+          })
+        }
+      },
+      (updatedNotif) => {
+        setNotifications((prev) =>
+          prev.map((n) =>
+            n.id === updatedNotif.id
+              ? { ...updatedNotif, read: n.read || updatedNotif.read }
+              : n,
+          ),
+        )
+      },
+    )
 
     return () => unsubscribe()
   }, [loadNotifications])
@@ -81,18 +92,17 @@ export default function NotificationDropdown() {
   }, [])
 
   async function handleMarkAllRead() {
-    await notificationRepository.markAllAsRead()
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })))
-    setUnreadCount(0)
+    await notificationRepository.markAllAsRead(notifications)
+    toast.success('Semua notifikasi ditandai sudah dibaca')
   }
 
   async function handleItemClick(item) {
     if (!item.read) {
-      await notificationRepository.markAsRead(item.id)
       setNotifications((prev) =>
         prev.map((n) => (n.id === item.id ? { ...n, read: true } : n)),
       )
-      setUnreadCount((prev) => Math.max(0, prev - 1))
+      await notificationRepository.markAsRead(item.id)
     }
 
     setOpen(false)
@@ -164,7 +174,9 @@ export default function NotificationDropdown() {
             {/* Header Dropdown */}
             <div className="mb-2.5 flex items-center justify-between border-b border-border dark:border-border-dark pb-2 px-1">
               <div className="flex items-center gap-2">
-                <h3 className="text-sm font-bold text-ink dark:text-ink-dark">Notification Center</h3>
+                <h3 className="text-sm font-bold text-ink dark:text-ink-dark">
+                  Notification Center
+                </h3>
                 {unreadCount > 0 && (
                   <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
                     {unreadCount} baru
@@ -172,66 +184,88 @@ export default function NotificationDropdown() {
                 )}
               </div>
 
-            {unreadCount > 0 && (
-              <button
-                onClick={handleMarkAllRead}
-                className="flex items-center gap-1 text-[11px] font-medium text-emerald-600 dark:text-emerald-400 hover:underline"
-              >
-                <CheckCheck className="h-3.5 w-3.5" />
-                Tandai dibaca
-              </button>
-            )}
-          </div>
-
-          {/* Body List Notifikasi */}
-          <div className="max-h-80 overflow-y-auto space-y-1 pr-0.5">
-            {!notifications.length ? (
-              <div className="py-8 text-center">
-                <Bell className="mx-auto h-8 w-8 text-slate-300 dark:text-slate-600 mb-1" />
-                <p className="text-xs text-ink-muted dark:text-ink-muted-dark">Belum ada notifikasi.</p>
-              </div>
-            ) : (
-              notifications.map((item) => (
-                <div
-                  key={item.id}
-                  onClick={() => handleItemClick(item)}
-                  className={`flex cursor-pointer items-start gap-3 rounded-xl p-2.5 transition-colors ${
-                    !item.read
-                      ? 'bg-emerald-50/70 dark:bg-emerald-900/20'
-                      : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'
-                  }`}
+              {unreadCount > 0 && (
+                <button
+                  type="button"
+                  onClick={handleMarkAllRead}
+                  className="flex items-center gap-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer"
                 >
-                  <div className="mt-0.5 shrink-0 rounded-lg bg-surface p-1.5 shadow-xs dark:bg-surface-dark">
-                    {renderIcon(item.type, item.jenis_notifikasi)}
-                  </div>
+                  <CheckCheck className="h-3.5 w-3.5" />
+                  Tandai semua dibaca
+                </button>
+              )}
+            </div>
 
-                  <div className="flex-1 space-y-0.5 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <p className={`text-xs font-semibold truncate ${!item.read ? 'text-ink dark:text-ink-dark font-bold' : 'text-slate-700 dark:text-slate-300'}`}>
-                        {item.title}
-                      </p>
-                      <span className="text-[10px] text-ink-muted dark:text-ink-muted-dark shrink-0 ml-2">
-                        {formatDistanceToNow(new Date(item.created_at), {
-                          addSuffix: true,
-                          locale: id,
-                        })}
-                      </span>
-                    </div>
-                    <p className="text-[11px] text-ink-muted dark:text-ink-muted-dark line-clamp-2">
-                      {item.message}
-                    </p>
-                  </div>
-
-                  {!item.read && (
-                    <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-emerald-500" />
-                  )}
+            {/* Body List Notifikasi */}
+            <div className="max-h-80 overflow-y-auto space-y-1 pr-0.5">
+              {!notifications.length ? (
+                <div className="py-8 text-center">
+                  <Bell className="mx-auto h-8 w-8 text-slate-300 dark:text-slate-600 mb-1" />
+                  <p className="text-xs text-ink-muted dark:text-ink-muted-dark">
+                    Belum ada notifikasi.
+                  </p>
                 </div>
-              ))
-            )}
+              ) : (
+                notifications.map((item) => (
+                  <div
+                    key={item.id}
+                    onClick={() => handleItemClick(item)}
+                    className={`flex cursor-pointer items-start gap-3 rounded-xl p-2.5 transition-colors ${
+                      !item.read
+                        ? 'bg-emerald-50/70 dark:bg-emerald-900/20'
+                        : 'hover:bg-slate-50 dark:hover:bg-slate-800/50 opacity-80'
+                    }`}
+                  >
+                    <div className="mt-0.5 shrink-0 rounded-lg bg-surface p-1.5 shadow-xs dark:bg-surface-dark">
+                      {renderIcon(item.type, item.jenis_notifikasi)}
+                    </div>
+
+                    <div className="flex-1 space-y-0.5 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <p
+                          className={`text-xs font-semibold truncate ${
+                            !item.read
+                              ? 'text-ink dark:text-ink-dark font-bold'
+                              : 'text-slate-700 dark:text-slate-300'
+                          }`}
+                        >
+                          {item.title}
+                        </p>
+                        <span className="text-[10px] text-ink-muted dark:text-ink-muted-dark shrink-0 ml-2">
+                          {formatDistanceToNow(new Date(item.created_at), {
+                            addSuffix: true,
+                            locale: id,
+                          })}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-ink-muted dark:text-ink-muted-dark line-clamp-2">
+                        {item.message}
+                      </p>
+                    </div>
+
+                    {!item.read ? (
+                      <button
+                        type="button"
+                        onClick={async (e) => {
+                          e.stopPropagation()
+                          setNotifications((prev) =>
+                            prev.map((n) => (n.id === item.id ? { ...n, read: true } : n)),
+                          )
+                          await notificationRepository.markAsRead(item.id)
+                        }}
+                        title="Tandai sudah dibaca"
+                        className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-emerald-500 hover:scale-125 transition-transform"
+                      />
+                    ) : (
+                      <CheckCircle2 className="mt-1 h-3.5 w-3.5 shrink-0 text-emerald-500/60" />
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
           </div>
-        </div>
-      </>
-    )}
-  </div>
+        </>
+      )}
+    </div>
   )
 }

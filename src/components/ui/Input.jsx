@@ -23,9 +23,9 @@ const Input = forwardRef(function Input(
           id={inputId}
           ref={ref}
           className={cn(
-            'h-10 w-full rounded-xl border border-border dark:border-border-dark bg-white dark:bg-surface-dark px-3 text-sm text-ink dark:text-ink-dark placeholder:text-ink-muted/60 dark:placeholder:text-ink-muted-dark/60',
+            'h-11 w-full rounded-xl border border-border dark:border-border-dark bg-white dark:bg-bg-dark px-3.5 text-sm text-ink dark:text-ink-dark placeholder:text-ink-muted/60 dark:placeholder:text-ink-muted-dark/60 transition-colors',
             'focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20',
-            Icon && 'pl-9',
+            Icon && 'pl-10',
             error && 'border-danger focus:border-danger focus:ring-danger/20',
             className,
           )}

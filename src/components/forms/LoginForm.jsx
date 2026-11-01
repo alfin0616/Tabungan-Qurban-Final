@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { Phone, Lock, Building2, Users, Shield, User } from 'lucide-react'
+import { Phone, Lock, Building2, Users, Shield, User, KeyRound, ChevronDown } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { loginSchema } from '../../validations/authValidation'
 import { useAuth } from '../../context/AuthContext'
@@ -12,11 +12,11 @@ import Input from '../ui/Input'
 import Button from '../ui/Button'
 
 export default function LoginForm() {
-  const { login, setActiveJamaahGroup, getRememberedEmail } = useAuth()
+  const { login, logout, setActiveJamaahGroup, setActiveAdminInstansi, getRememberedEmail } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
 
-  // Mode login: 'jamaah' (wajib pilih masjid & kelompok) atau 'admin' (pengurus)
+  // Mode login: 'jamaah' (wajib pilih masjid & kelompok) atau 'admin' (pengurus instansi / superadmin)
   const [loginType, setLoginType] = useState('jamaah')
   const [instansiList, setInstansiList] = useState([])
   const [kelompokList, setKelompokList] = useState([])
@@ -24,6 +24,7 @@ export default function LoginForm() {
   const [loadingKelompok, setLoadingKelompok] = useState(false)
   const [selectedInstansiId, setSelectedInstansiId] = useState('')
   const [selectedKelompokId, setSelectedKelompokId] = useState('')
+  const [kodeInstansi, setKodeInstansi] = useState('')
   const [groupError, setGroupError] = useState('')
 
   const {
@@ -46,13 +47,13 @@ export default function LoginForm() {
   }, [getRememberedEmail, setValue])
 
   useEffect(() => {
-    if (selectedInstansiId) {
+    if (selectedInstansiId && loginType === 'jamaah') {
       fetchKelompokList(selectedInstansiId)
     } else {
       setKelompokList([])
       setSelectedKelompokId('')
     }
-  }, [selectedInstansiId])
+  }, [selectedInstansiId, loginType])
 
   async function fetchInstansiList() {
     setLoadingInstansi(true)
@@ -100,7 +101,6 @@ export default function LoginForm() {
   }
 
   async function onSubmit(values) {
-    // Validasi wajib untuk Jamaah
     if (loginType === 'jamaah') {
       if (!selectedInstansiId) {
         setGroupError('Wajib memilih Masjid / Instansi Qurban Anda.')
@@ -114,24 +114,44 @@ export default function LoginForm() {
     setGroupError('')
 
     try {
-      await login(values)
+      const authData = await login(values)
 
-      // Jika login sebagai Jamaah, langsung atur kelompok aktif di sesi ini
       if (loginType === 'jamaah') {
         await setActiveJamaahGroup(selectedInstansiId, selectedKelompokId)
+      } else if (loginType === 'admin') {
+        if (kodeInstansi.trim()) {
+          await setActiveAdminInstansi(null, kodeInstansi.trim())
+        } else {
+          const userId = authData?.user?.id ?? authData?.session?.user?.id
+          if (userId) {
+            const { data: prof } = await supabase
+              .from('admin_profiles')
+              .select('role, instansi_id')
+              .eq('id', userId)
+              .maybeSingle()
+
+            if (prof?.role !== 'admin' && prof?.role !== 'superadmin') {
+              await logout()
+              setGroupError(
+                'Akun ini bukan akun Admin Instansi. Masukkan Kode Instansi resmi di bawah untuk mengaktifkan akses Admin, atau daftar melalui halaman Daftar Admin Instansi.',
+              )
+              return
+            }
+          }
+        }
       }
 
       toast.success('Selamat datang kembali!')
       navigate(location.state?.from?.pathname || '/dashboard', { replace: true })
     } catch (err) {
-      toast.error(err.message || 'Email/Nomor Telepon atau password salah')
+      toast.error(err.message || 'Email/Nomor Telepon, Kode Instansi, atau password salah')
     }
   }
 
   return (
     <div className="space-y-5">
       {/* TOGGLE MODE LOGIN: JAMAAH vs PENGURUS */}
-      <div className="grid grid-cols-2 gap-1 rounded-2xl bg-emerald-100/60 dark:bg-emerald-950/60 p-1.5 border border-emerald-600/20">
+      <div className="grid grid-cols-2 gap-1.5 rounded-2xl border border-border dark:border-border-dark bg-bg dark:bg-bg-dark p-1.5">
         <button
           type="button"
           onClick={() => {
@@ -139,14 +159,14 @@ export default function LoginForm() {
             setGroupError('')
           }}
           className={cn(
-            'flex items-center justify-center gap-1.5 rounded-xl py-2.5 text-xs font-bold transition-all duration-200',
+            'flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-xs font-bold transition-all duration-200',
             loginType === 'jamaah'
-              ? 'bg-emerald-600 text-white shadow-soft'
-              : 'text-emerald-800 dark:text-emerald-300 hover:bg-white/50 dark:hover:bg-emerald-900/40',
+              ? 'bg-emerald-700 text-white shadow-sm'
+              : 'text-ink-muted dark:text-ink-muted-dark hover:text-ink dark:hover:text-ink-dark',
           )}
         >
-          <User className="h-4 w-4" />
-          Masuk Jamaah Qurban
+          <User className="h-4 w-4 shrink-0" />
+          <span>Jamaah Qurban</span>
         </button>
         <button
           type="button"
@@ -155,84 +175,115 @@ export default function LoginForm() {
             setGroupError('')
           }}
           className={cn(
-            'flex items-center justify-center gap-1.5 rounded-xl py-2.5 text-xs font-bold transition-all duration-200',
+            'flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-xs font-bold transition-all duration-200',
             loginType === 'admin'
-              ? 'bg-emerald-600 text-white shadow-soft'
-              : 'text-emerald-800 dark:text-emerald-300 hover:bg-white/50 dark:hover:bg-emerald-900/40',
+              ? 'bg-emerald-700 text-white shadow-sm'
+              : 'text-ink-muted dark:text-ink-muted-dark hover:text-ink dark:hover:text-ink-dark',
           )}
         >
-          <Shield className="h-4 w-4" />
-          Masuk Pengurus / Admin
+          <Shield className="h-4 w-4 shrink-0" />
+          <span>Pengurus / Admin</span>
         </button>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {/* FIELD PILIH MASJID & KELOMPOK KHUSUS MODE JAMAAH */}
         {loginType === 'jamaah' && (
-          <div className="space-y-3.5 rounded-2xl border border-emerald-600/30 bg-emerald-50/50 dark:bg-emerald-950/30 p-4">
-            <div className="text-xs font-bold text-emerald-800 dark:text-emerald-200 flex items-center gap-1.5">
-              <Users className="h-4 w-4 text-emerald-600" />
-              Pilih Masjid & Kelompok Aktif Anda:
+          <div className="space-y-3.5 rounded-2xl border border-emerald-500/25 bg-emerald-50/50 dark:bg-emerald-950/25 p-4">
+            <div className="flex items-center gap-2 text-xs font-bold text-emerald-800 dark:text-emerald-300">
+              <Users className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+              Pilih Masjid &amp; Kelompok Aktif Anda:
             </div>
 
             {/* DROPDOWN MASJID */}
-            <div>
-              <label className="block text-xs font-semibold text-ink dark:text-ink-dark mb-1 flex items-center gap-1">
-                <Building2 className="h-3.5 w-3.5 text-emerald-600" />
-                Masjid / Instansi Qurban <span className="text-red-500">*</span>
+            <div className="space-y-1.5">
+              <label className="flex items-center gap-1.5 text-xs font-semibold text-ink dark:text-ink-dark">
+                <Building2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                Masjid / Instansi Qurban <span className="text-danger">*</span>
               </label>
-              <select
-                value={selectedInstansiId}
-                onChange={(e) => {
-                  setSelectedInstansiId(e.target.value)
-                  setGroupError('')
-                }}
-                disabled={loadingInstansi}
-                className="block w-full rounded-xl border border-border dark:border-border-dark bg-white dark:bg-bg-dark px-3 py-2 text-xs font-medium text-ink dark:text-ink-dark focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 disabled:opacity-50"
-              >
-                <option value="">
-                  {loadingInstansi ? '-- Memuat daftar masjid... --' : '-- Pilih Masjid / Instansi --'}
-                </option>
-                {instansiList.map((ins) => (
-                  <option key={ins.id} value={ins.id}>
-                    {ins.nama_instansi} {ins.alamat ? `— (${ins.alamat})` : ''}
+              <div className="relative">
+                <select
+                  value={selectedInstansiId}
+                  onChange={(e) => {
+                    setSelectedInstansiId(e.target.value)
+                    setGroupError('')
+                  }}
+                  disabled={loadingInstansi}
+                  className="h-11 w-full rounded-xl border border-border dark:border-border-dark bg-white dark:bg-bg-dark pl-3.5 pr-9 text-xs sm:text-sm font-medium text-ink dark:text-ink-dark focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 disabled:opacity-50"
+                >
+                  <option value="">
+                    {loadingInstansi ? '-- Memuat daftar masjid... --' : '-- Pilih Masjid / Instansi --'}
                   </option>
-                ))}
-              </select>
+                  {instansiList.map((ins) => (
+                    <option key={ins.id} value={ins.id}>
+                      {ins.nama_instansi} {ins.alamat ? `— (${ins.alamat})` : ''}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted dark:text-ink-muted-dark" />
+              </div>
             </div>
 
             {/* DROPDOWN KELOMPOK */}
-            <div>
-              <label className="block text-xs font-semibold text-ink dark:text-ink-dark mb-1 flex items-center gap-1">
-                <Users className="h-3.5 w-3.5 text-emerald-600" />
-                Kelompok Qurban <span className="text-red-500">*</span>
+            <div className="space-y-1.5">
+              <label className="flex items-center gap-1.5 text-xs font-semibold text-ink dark:text-ink-dark">
+                <Users className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                Kelompok Qurban <span className="text-danger">*</span>
               </label>
-              <select
-                value={selectedKelompokId}
-                onChange={(e) => {
-                  setSelectedKelompokId(e.target.value)
-                  setGroupError('')
-                }}
-                disabled={!selectedInstansiId || loadingKelompok}
-                className="block w-full rounded-xl border border-border dark:border-border-dark bg-white dark:bg-bg-dark px-3 py-2 text-xs font-medium text-ink dark:text-ink-dark focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 disabled:opacity-50"
-              >
-                <option value="">
-                  {!selectedInstansiId
-                    ? '-- Pilih Masjid terlebih dahulu --'
-                    : loadingKelompok
-                      ? '-- Memuat kelompok... --'
-                      : '-- Pilih Kelompok Qurban --'}
-                </option>
-                {kelompokList.map((klp) => (
-                  <option key={klp.id} value={klp.id}>
-                    {klp.nama_kelompok} — ({klp.jenis_qurban === 'sapi' ? 'Sapi 1/7' : 'Kambing 1/1'})
+              <div className="relative">
+                <select
+                  value={selectedKelompokId}
+                  onChange={(e) => {
+                    setSelectedKelompokId(e.target.value)
+                    setGroupError('')
+                  }}
+                  disabled={!selectedInstansiId || loadingKelompok}
+                  className="h-11 w-full rounded-xl border border-border dark:border-border-dark bg-white dark:bg-bg-dark pl-3.5 pr-9 text-xs sm:text-sm font-medium text-ink dark:text-ink-dark focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 disabled:opacity-50"
+                >
+                  <option value="">
+                    {!selectedInstansiId
+                      ? '-- Pilih Masjid terlebih dahulu --'
+                      : loadingKelompok
+                        ? '-- Memuat kelompok... --'
+                        : '-- Pilih Kelompok Qurban --'}
                   </option>
-                ))}
-              </select>
+                  {kelompokList.map((klp) => (
+                    <option key={klp.id} value={klp.id}>
+                      {klp.nama_kelompok} — ({klp.jenis_qurban === 'sapi' ? 'Sapi 1/7' : 'Kambing 1/1'})
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted dark:text-ink-muted-dark" />
+              </div>
             </div>
 
             {groupError && (
-              <p className="text-xs font-bold text-red-500 bg-red-50 dark:bg-red-950/40 p-2 rounded-lg border border-red-200">
+              <p className="rounded-xl border border-danger/30 bg-danger/10 p-2.5 text-xs font-semibold text-danger">
+                ⚠️ {groupError}
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* FIELD KODE INSTANSI KHUSUS MODE PENGURUS / ADMIN */}
+        {loginType === 'admin' && (
+          <div className="space-y-2.5 rounded-2xl border border-emerald-500/25 bg-emerald-50/50 dark:bg-emerald-950/25 p-4">
+            <label className="flex items-center gap-1.5 text-xs font-semibold text-ink dark:text-ink-dark">
+              <KeyRound className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+              Kode Instansi (Opsional bila akun Admin sudah aktif)
+            </label>
+            <input
+              type="text"
+              value={kodeInstansi}
+              onChange={(e) => {
+                setKodeInstansi(e.target.value)
+                setGroupError('')
+              }}
+              placeholder="Contoh: INS-0001 (Kosongkan jika sudah aktif)"
+              className="h-11 w-full rounded-xl border border-border dark:border-border-dark bg-white dark:bg-bg-dark px-3.5 font-mono text-xs sm:text-sm text-ink dark:text-ink-dark placeholder:text-ink-muted/60 dark:placeholder:text-ink-muted-dark/60 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+            />
+            {groupError && (
+              <p className="rounded-xl border border-danger/30 bg-danger/10 p-2.5 text-xs font-semibold text-danger">
                 ⚠️ {groupError}
               </p>
             )}
@@ -263,8 +314,8 @@ export default function LoginForm() {
           {...register('password')}
         />
 
-        <div className="flex items-center justify-between text-sm">
-          <label className="flex items-center gap-2 text-ink-muted dark:text-ink-muted-dark">
+        <div className="flex items-center justify-between pt-0.5 text-xs sm:text-sm">
+          <label className="flex items-center gap-2 font-medium text-ink-muted dark:text-ink-muted-dark">
             <input
               type="checkbox"
               className="h-4 w-4 rounded border-border dark:border-border-dark text-emerald-600 focus:ring-emerald-500"
@@ -272,25 +323,37 @@ export default function LoginForm() {
             />
             Ingat saya
           </label>
-          <Link to="/reset-password" className="font-medium text-emerald-600 hover:underline">
+          <Link to="/reset-password" className="font-semibold text-emerald-600 dark:text-emerald-400 hover:underline">
             Lupa password?
           </Link>
         </div>
 
-        <Button type="submit" className="w-full" loading={isSubmitting}>
-          {loginType === 'jamaah' ? 'Masuk ke Kelompok Saya' : 'Masuk sebagai Pengurus / Admin'}
+        <Button type="submit" className="h-11 w-full text-sm font-bold shadow-soft" loading={isSubmitting}>
+          {loginType === 'jamaah' ? 'Masuk ke Kelompok Saya' : 'Masuk ke Panel Pengurus / Admin'}
         </Button>
 
-        <div className="pt-4 border-t border-border dark:border-border-dark text-center">
-          <p className="text-sm text-ink-muted dark:text-ink-muted-dark">
-            Belum memiliki akun Jamaah?{' '}
-            <Link
-              to="/register"
-              className="font-bold text-emerald-600 hover:text-emerald-500 hover:underline dark:text-emerald-400"
-            >
-              Daftar Akun Baru
-            </Link>
-          </p>
+        <div className="border-t border-border dark:border-border-dark pt-4 text-center">
+          {loginType === 'jamaah' ? (
+            <p className="text-xs sm:text-sm text-ink-muted dark:text-ink-muted-dark">
+              Belum memiliki akun Jamaah?{' '}
+              <Link
+                to="/register"
+                className="font-bold text-emerald-600 hover:text-emerald-500 hover:underline dark:text-emerald-400"
+              >
+                Daftar Akun Jamaah
+              </Link>
+            </p>
+          ) : (
+            <p className="text-xs sm:text-sm text-ink-muted dark:text-ink-muted-dark">
+              Ingin mendaftarkan akun Admin Instansi baru?{' '}
+              <Link
+                to="/claim-instansi"
+                className="font-bold text-emerald-600 hover:text-emerald-500 hover:underline dark:text-emerald-400"
+              >
+                Daftar dengan Kode Instansi
+              </Link>
+            </p>
+          )}
         </div>
       </form>
     </div>

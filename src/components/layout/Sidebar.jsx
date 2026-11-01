@@ -15,15 +15,13 @@ import {
   Building2,
   Layers,
   Activity,
-  BarChart3,
   ScrollText,
   ShieldCheck,
   HardDrive,
   Bug,
   Database,
   ChevronRight,
-  PanelLeftClose,
-  PanelLeftOpen,
+  Menu,
   ArrowLeft,
   User,
   FolderOpen,
@@ -34,7 +32,7 @@ import { useAuth } from '../../context/AuthContext'
 import { useSettings } from '../../hooks/useSettings'
 import logoSQNn from '../../assets/SQNn.png'
 
-// Top-level reguler menu
+// Top-level reguler menu (untuk Admin Instansi & Jamaah)
 const topLevelMenu = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
 ]
@@ -47,7 +45,7 @@ const regularMenuGroups = [
     icon: Database,
     description: 'Pilih menu di bawah ini.',
     items: [
-      { to: '/instansi', label: 'Instansi', icon: Building2, adminOnly: true },
+      { to: '/instansi', label: 'Instansi', icon: Building2, superAdminOnly: true },
       { to: '/kelompok', label: 'Kelompok', icon: Layers, adminOnly: true },
       { to: '/anggota', label: 'Anggota', icon: Users },
       { to: '/tabungan', label: 'Tabungan', icon: Coins },
@@ -109,7 +107,7 @@ export default function Sidebar({ open, onClose, collapsed: propCollapsed, onTog
   const appName = settings?.app_name || 'SIQURBAN'
   const navigate = useNavigate()
   const location = useLocation()
-  
+
   const [internalCollapsed, setInternalCollapsed] = useState(() => {
     return localStorage.getItem('siqurban_sidebar_collapsed') === 'true'
   })
@@ -232,7 +230,7 @@ export default function Sidebar({ open, onClose, collapsed: propCollapsed, onTog
                 Super Admin
               </p>
               {collapsed && <div className="my-2 hidden border-t border-emerald-700/60 lg:block" />}
-              
+
               {/* Top-level SA (Dashboard SA) */}
               {topLevelSuperAdminMenu.map(({ to, label, icon: Icon }) => (
                 <NavLink
@@ -248,7 +246,7 @@ export default function Sidebar({ open, onClose, collapsed: propCollapsed, onTog
                       'cursor-pointer flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors',
                       collapsed && 'lg:justify-center lg:px-2',
                       isActive
-                        ? 'bg-emerald-600 text-white shadow-soft font-semibold'
+                        ? 'bg-emerald-900/90 text-white shadow-soft font-semibold border border-emerald-600/40'
                         : 'text-emerald-100 hover:bg-emerald-700 hover:text-white',
                     )
                   }
@@ -274,7 +272,7 @@ export default function Sidebar({ open, onClose, collapsed: propCollapsed, onTog
                       'cursor-pointer flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200',
                       collapsed ? 'lg:justify-center lg:px-2' : '',
                       isOpenThisGroup || isGroupActive
-                        ? 'bg-emerald-700/80 text-white font-bold shadow-soft'
+                        ? 'bg-emerald-900/90 text-white font-bold shadow-soft border border-emerald-600/40'
                         : 'text-emerald-100 hover:bg-emerald-700/60 hover:text-white',
                     )}
                   >
@@ -300,40 +298,43 @@ export default function Sidebar({ open, onClose, collapsed: propCollapsed, onTog
                   collapsed && 'lg:hidden',
                 )}
               >
-                Instansi Saya
+                Monitoring & Data
               </p>
             </>
           )}
 
-          {/* Top-level Reguler (Dashboard) */}
-          {topLevelMenu.map(({ to, label, icon: Icon }) => (
-            <NavLink
-              key={to}
-              to={to}
-              onClick={() => {
-                setActiveGroup(null)
-                onClose?.()
-              }}
-              title={label}
-              className={({ isActive }) =>
-                cn(
-                  'cursor-pointer flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors',
-                  collapsed && 'lg:justify-center lg:px-2',
-                  isActive
-                    ? 'bg-emerald-600 text-white shadow-soft font-semibold'
-                    : 'text-emerald-100 hover:bg-emerald-700 hover:text-white',
-                )
-              }
-            >
-              <Icon className="h-[18px] w-[18px] shrink-0" />
-              <span className={cn('truncate', collapsed && 'lg:hidden')}>{label}</span>
-            </NavLink>
-          ))}
+          {/* Top-level Reguler (Dashboard) — Hanya untuk Admin Instansi & Jamaah */}
+          {!isSuperAdmin &&
+            topLevelMenu.map(({ to, label, icon: Icon }) => (
+              <NavLink
+                key={to}
+                to={to}
+                onClick={() => {
+                  setActiveGroup(null)
+                  onClose?.()
+                }}
+                title={label}
+                className={({ isActive }) =>
+                  cn(
+                    'cursor-pointer flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors',
+                    collapsed && 'lg:justify-center lg:px-2',
+                    isActive
+                      ? 'bg-emerald-900/90 text-white shadow-soft font-semibold border border-emerald-600/40'
+                      : 'text-emerald-100 hover:bg-emerald-700 hover:text-white',
+                  )
+                }
+              >
+                <Icon className="h-[18px] w-[18px] shrink-0" />
+                <span className={cn('truncate', collapsed && 'lg:hidden')}>{label}</span>
+              </NavLink>
+            ))}
 
           {/* Kelompok Dropdown Reguler (Master Data, Keuangan, Pengaturan) */}
           {regularMenuGroups.map((group) => {
             const GroupIcon = group.icon
-            const visibleItems = group.items.filter((item) => !item.adminOnly || isAdmin)
+            const visibleItems = group.items.filter(
+              (item) => (!item.adminOnly || isAdmin) && (!item.superAdminOnly || isSuperAdmin),
+            )
             if (!visibleItems.length) return null
 
             const isGroupActive = visibleItems.some((item) => location.pathname === item.to || location.pathname.startsWith(`${item.to}/`))
@@ -349,7 +350,7 @@ export default function Sidebar({ open, onClose, collapsed: propCollapsed, onTog
                   'cursor-pointer flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200',
                   collapsed ? 'lg:justify-center lg:px-2' : '',
                   isOpenThisGroup || isGroupActive
-                    ? 'bg-emerald-700/80 text-white font-bold shadow-soft'
+                    ? 'bg-emerald-900/90 text-white font-bold shadow-soft border border-emerald-600/40'
                     : 'text-emerald-100 hover:bg-emerald-700/60 hover:text-white',
                 )}
               >
@@ -384,7 +385,7 @@ export default function Sidebar({ open, onClose, collapsed: propCollapsed, onTog
           </button>
         </nav>
 
-        {/* Tombol Toggle Perkecil & Perbesar Menu di Bawah Sidebar (Bottom Toggle) */}
+        {/* Tombol Toggle Perkecil & Perbesar Menu di Bawah Sidebar dengan Icon Hamburger Garis 3 Horizontal */}
         <div className="hidden border-t border-emerald-700/80 p-3 lg:block">
           <button
             onClick={toggleCollapsed}
@@ -395,11 +396,7 @@ export default function Sidebar({ open, onClose, collapsed: propCollapsed, onTog
               collapsed && 'justify-center px-0',
             )}
           >
-            {collapsed ? (
-              <PanelLeftOpen className="h-5 w-5 shrink-0 text-emerald-300" />
-            ) : (
-              <PanelLeftClose className="h-5 w-5 shrink-0 text-emerald-300" />
-            )}
+            <Menu className="h-5 w-5 shrink-0 text-emerald-300" />
             <span className={cn('text-xs font-semibold tracking-wide truncate', collapsed && 'hidden')}>
               Perkecil Menu
             </span>
@@ -407,16 +404,12 @@ export default function Sidebar({ open, onClose, collapsed: propCollapsed, onTog
         </div>
       </aside>
 
-      {/* ===================================================================== */}
-      {/* MEGA SIDE DRAWER PANEL (DROPDOWN KE SAMPING SEPERTI PANEL REFERENSI)  */}
-      {/* ===================================================================== */}
+      {/* MEGA SIDE DRAWER PANEL */}
       {activeGroup && (
         <div
           ref={sideDrawerRef}
           className={cn(
             'fixed inset-y-0 z-50 flex h-screen max-h-screen flex-col border-r border-emerald-700/80 bg-emerald-900/95 dark:bg-emerald-950/95 text-white shadow-2xl backdrop-blur-md transition-all duration-300 animate-in slide-in-from-left-4',
-            // On Mobile (< lg): full width (w-full / max-w-full) covering screen cleanly without cut off
-            // On Desktop (lg): anchored next to sidebar (left-64 or left-20)
             'left-0 w-full sm:w-[380px]',
             collapsed
               ? 'lg:left-20 lg:w-[420px] sm:lg:w-[500px]'
@@ -426,7 +419,6 @@ export default function Sidebar({ open, onClose, collapsed: propCollapsed, onTog
           {/* Header Drawer */}
           <div className="flex items-center justify-between border-b border-emerald-800/90 p-4 sm:p-6">
             <div className="flex items-center gap-3 min-w-0">
-              {/* Back Button for Mobile */}
               <button
                 onClick={() => setActiveGroup(null)}
                 title="Kembali ke Menu Utama"
@@ -457,7 +449,11 @@ export default function Sidebar({ open, onClose, collapsed: propCollapsed, onTog
           <div className="flex-1 overflow-y-auto p-4 sm:p-6">
             <div className="grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-3">
               {activeGroup.items
-                .filter((item) => !item.adminOnly || isAdmin || isSuperAdmin)
+                .filter(
+                  (item) =>
+                    (!item.adminOnly || isAdmin || isSuperAdmin) &&
+                    (!item.superAdminOnly || isSuperAdmin),
+                )
                 .map((item) => {
                   const ItemIcon = item.icon
                   const isActive = location.pathname === item.to || location.pathname.startsWith(`${item.to}/`)
@@ -473,7 +469,7 @@ export default function Sidebar({ open, onClose, collapsed: propCollapsed, onTog
                       className={cn(
                         'group cursor-pointer flex flex-col items-center justify-center rounded-2xl border p-3.5 sm:p-5 text-center transition-all duration-200 shadow-md',
                         isActive
-                          ? 'border-2 border-emerald-300 bg-emerald-600 shadow-xl shadow-emerald-950/50 font-bold scale-[1.02]'
+                          ? 'border-2 border-emerald-300 bg-emerald-700 shadow-xl shadow-emerald-950/50 font-bold scale-[1.02]'
                           : 'border-emerald-700/80 bg-emerald-800/70 hover:border-emerald-400 hover:bg-emerald-700/90 hover:shadow-lg',
                       )}
                     >
@@ -481,8 +477,8 @@ export default function Sidebar({ open, onClose, collapsed: propCollapsed, onTog
                         className={cn(
                           'mb-2 sm:mb-3 flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-xl transition-colors shadow-sm',
                           isActive
-                            ? 'bg-white text-emerald-700 font-bold'
-                            : 'bg-emerald-950/70 text-emerald-300 group-hover:bg-emerald-500 group-hover:text-white',
+                            ? 'bg-white text-emerald-800 font-bold'
+                            : 'bg-emerald-950/70 text-emerald-300 group-hover:bg-emerald-600 group-hover:text-white',
                         )}
                       >
                         <ItemIcon className="h-5 w-5 sm:h-6 sm:w-6" />

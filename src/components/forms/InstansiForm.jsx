@@ -1,5 +1,6 @@
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { CreditCard } from 'lucide-react'
 import { instansiSchema } from '../../validations/instansiValidation'
 import Input from '../ui/Input'
 import Select from '../ui/Select'
@@ -12,15 +13,31 @@ export default function InstansiForm({ initialData, onSubmit, onCancel, isSubmit
     formState: { errors },
   } = useForm({
     resolver: zodResolver(instansiSchema),
-    defaultValues: initialData || {
-      nama_instansi: '',
-      alamat: '',
-      telepon: '',
-      email: '',
-      tahun_qurban_aktif: new Date().getFullYear(),
-      status: true,
-      is_default: false,
-    },
+    defaultValues: initialData
+      ? {
+          nama_instansi: initialData.nama_instansi || '',
+          alamat: initialData.alamat || '',
+          telepon: initialData.telepon || '',
+          email: initialData.email || '',
+          nama_bank: initialData.nama_bank || '',
+          nomor_rekening: initialData.nomor_rekening || initialData.rekening || '',
+          atas_nama_rekening: initialData.atas_nama_rekening || '',
+          tahun_qurban_aktif: initialData.tahun_qurban_aktif || new Date().getFullYear(),
+          status: initialData.status ?? true,
+          is_default: initialData.is_default ?? false,
+        }
+      : {
+          nama_instansi: '',
+          alamat: '',
+          telepon: '',
+          email: '',
+          nama_bank: '',
+          nomor_rekening: '',
+          atas_nama_rekening: '',
+          tahun_qurban_aktif: new Date().getFullYear(),
+          status: true,
+          is_default: false,
+        },
   })
 
   return (
@@ -31,27 +48,58 @@ export default function InstansiForm({ initialData, onSubmit, onCancel, isSubmit
         error={errors.nama_instansi?.message}
         placeholder="Misal: Masjid Al-Ikhlas"
       />
-      
+
       <Input
         label="Alamat Lengkap"
         {...register('alamat')}
         error={errors.alamat?.message}
         placeholder="Alamat instansi"
       />
-      
-      <div className="grid grid-cols-2 gap-4">
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Input
           label="No Telepon"
           {...register('telepon')}
           error={errors.telepon?.message}
           placeholder="0812xxxx"
         />
-        
+
         <Input
           label="Email (Opsional)"
           {...register('email')}
           error={errors.email?.message}
           placeholder="email@masjid.com"
+        />
+      </div>
+
+      {/* Seksi Rekening Bank Instansi */}
+      <div className="rounded-xl border border-emerald-200 dark:border-emerald-800/60 bg-emerald-50/40 dark:bg-emerald-950/20 p-3.5 space-y-3">
+        <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300">
+          <CreditCard className="h-4 w-4" />
+          <span>Informasi Rekening Qurban Instansi</span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <Input
+            label="Nama Bank"
+            {...register('nama_bank')}
+            error={errors.nama_bank?.message}
+            placeholder="Misal: BSI / Bank Muamalat"
+          />
+
+          <Input
+            label="Nomor Rekening"
+            {...register('nomor_rekening')}
+            error={errors.nomor_rekening?.message}
+            placeholder="Misal: 7123456789"
+          />
+        </div>
+
+        <Input
+          label="Atas Nama Rekening"
+          {...register('atas_nama_rekening')}
+          error={errors.atas_nama_rekening?.message}
+          placeholder="Misal: Panitia Qurban Masjid Al-Ikhlas"
         />
       </div>
 
@@ -62,7 +110,7 @@ export default function InstansiForm({ initialData, onSubmit, onCancel, isSubmit
           {...register('tahun_qurban_aktif')}
           error={errors.tahun_qurban_aktif?.message}
         />
-        
+
         <Controller
           name="status"
           control={control}
@@ -84,14 +132,14 @@ export default function InstansiForm({ initialData, onSubmit, onCancel, isSubmit
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 text-sm font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:hover:bg-emerald-900/50 rounded-xl transition-colors"
+          className="px-4 py-2 text-sm font-semibold text-emerald-800 dark:text-emerald-300 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:hover:bg-emerald-900/50 rounded-xl transition-colors"
           disabled={isSubmitting}
         >
           Batal
         </button>
         <button
           type="submit"
-          className="px-6 py-2 text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition-all shadow-md hover:shadow-lg disabled:opacity-50 flex items-center gap-2"
+          className="px-6 py-2 text-sm font-bold text-white bg-gradient-to-tl from-emerald-800 to-emerald-600 hover:from-emerald-900 hover:to-emerald-700 rounded-xl transition-all shadow-md hover:shadow-lg disabled:opacity-50 flex items-center gap-2"
           disabled={isSubmitting}
         >
           {isSubmitting && (

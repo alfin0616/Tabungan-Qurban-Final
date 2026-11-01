@@ -1,22 +1,27 @@
+import { useEffect } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { kelompokSchema } from '../../validations/kelompokValidation'
 import { useInstansiSelect } from '../../hooks/useInstansi'
+import { useAuth } from '../../context/AuthContext'
 import Input from '../ui/Input'
 import Select from '../ui/Select'
 
 export default function KelompokForm({ initialData, onSubmit, onCancel, isSubmitting }) {
+  const { isSuperAdmin, instansiSaya, profile } = useAuth()
   const { data: instansiList, isLoading: loadingInstansi } = useInstansiSelect()
-  
+  const adminInstansiId = instansiSaya?.id || profile?.instansi_id || ''
+
   const {
     register,
     handleSubmit,
     control,
+    setValue,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(kelompokSchema),
     defaultValues: initialData || {
-      instansi_id: '',
+      instansi_id: adminInstansiId,
       nama_kelompok: '',
       jenis_qurban: 'sapi',
       target_dana: 21000000,
@@ -26,24 +31,44 @@ export default function KelompokForm({ initialData, onSubmit, onCancel, isSubmit
     },
   })
 
+  useEffect(() => {
+    if (!initialData && !isSuperAdmin && adminInstansiId) {
+      setValue('instansi_id', adminInstansiId)
+    }
+  }, [initialData, isSuperAdmin, adminInstansiId, setValue])
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <Controller
-        name="instansi_id"
-        control={control}
-        render={({ field }) => (
-          <Select
-            label="Masjid / Instansi"
-            value={field.value}
-            onChange={field.onChange}
-            error={errors.instansi_id?.message}
-            options={[
-              { value: '', label: loadingInstansi ? 'Memuat Instansi...' : '-- Pilih Instansi --' },
-              ...(instansiList || []).map((i) => ({ value: i.id, label: i.nama_instansi })),
-            ]}
+      {isSuperAdmin ? (
+        <Controller
+          name="instansi_id"
+          control={control}
+          render={({ field }) => (
+            <Select
+              label="Masjid / Instansi"
+              value={field.value}
+              onChange={field.onChange}
+              error={errors.instansi_id?.message}
+              options={[
+                { value: '', label: loadingInstansi ? 'Memuat Instansi...' : '-- Pilih Instansi --' },
+                ...(instansiList || []).map((i) => ({ value: i.id, label: i.nama_instansi })),
+              ]}
+            />
+          )}
+        />
+      ) : (
+        <div>
+          <label className="block text-sm font-medium text-ink dark:text-ink-dark mb-1">
+            Masjid / Instansi
+          </label>
+          <input
+            type="text"
+            disabled
+            value={instansiSaya?.nama_instansi || 'Instansi Anda'}
+            className="w-full rounded-xl border border-border dark:border-border-dark bg-bg/80 dark:bg-slate-800/60 px-3.5 py-2.5 text-sm font-semibold text-ink-muted dark:text-ink-muted-dark cursor-not-allowed"
           />
-        )}
-      />
+        </div>
+      )}
 
       <Input
         label="Nama Kelompok"
@@ -51,7 +76,7 @@ export default function KelompokForm({ initialData, onSubmit, onCancel, isSubmit
         error={errors.nama_kelompok?.message}
         placeholder="Misal: Kelompok 1 (Sapi)"
       />
-      
+
       <div className="grid grid-cols-2 gap-4">
         <Controller
           name="jenis_qurban"
@@ -61,7 +86,9 @@ export default function KelompokForm({ initialData, onSubmit, onCancel, isSubmit
               label="Jenis Qurban"
               value={field.value}
               onChange={(e) => {
-                field.onChange(e.target.value)
+                const val = e.target.value
+                field.onChange(val)
+                setValue('maksimal_anggota', val === 'kambing' ? 1 : 7)
               }}
               error={errors.jenis_qurban?.message}
               options={[
@@ -71,7 +98,7 @@ export default function KelompokForm({ initialData, onSubmit, onCancel, isSubmit
             />
           )}
         />
-        
+
         <Input
           type="number"
           label="Maksimal Anggota"
@@ -111,7 +138,7 @@ export default function KelompokForm({ initialData, onSubmit, onCancel, isSubmit
         )}
       />
 
-      <div className="pt-4 flex justify-end gap-3 border-t border-emerald-100 dark:border-emerald-800/30">
+      <div className="pt-4 flex justify-end gap-3 border-t border-border dark:border-border-dark">
         <button
           type="button"
           onClick={onCancel}
@@ -122,7 +149,7 @@ export default function KelompokForm({ initialData, onSubmit, onCancel, isSubmit
         </button>
         <button
           type="submit"
-          className="px-6 py-2 text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition-all shadow-md hover:shadow-lg disabled:opacity-50 flex items-center gap-2"
+          className="px-6 py-2 text-sm font-bold text-white bg-gradient-to-tl from-emerald-600 to-teal-500 hover:from-emerald-700 hover:to-teal-600 rounded-xl transition-all shadow-md hover:shadow-lg disabled:opacity-50 flex items-center gap-2"
           disabled={isSubmitting}
         >
           {isSubmitting && (

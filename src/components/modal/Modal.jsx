@@ -13,7 +13,13 @@ export default function Modal({ open, onClose, title, children, size = 'md' }) {
 
   if (!open) return null
 
-  const widths = { sm: 'max-w-sm', md: 'max-w-lg', lg: 'max-w-2xl' }
+  const widths = {
+    sm: 'max-w-sm',
+    md: 'max-w-lg',
+    lg: 'max-w-2xl',
+    xl: 'max-w-4xl',
+    '2xl': 'max-w-5xl',
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -24,12 +30,12 @@ export default function Modal({ open, onClose, title, children, size = 'md' }) {
       />
       <div
         className={cn(
-          'relative z-10 max-h-[90vh] w-full overflow-y-auto rounded-2xl border border-border dark:border-border-dark bg-surface dark:bg-surface-dark p-6 shadow-soft',
-          widths[size],
+          'relative z-10 max-h-[90vh] w-full overflow-y-auto rounded-2xl border border-border dark:border-border-dark bg-surface dark:bg-surface-dark p-6 shadow-argon',
+          widths[size] || widths.md,
         )}
       >
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-ink dark:text-ink-dark">{title}</h2>
+          <h2 className="text-lg font-bold text-ink dark:text-ink-dark">{title}</h2>
           <button
             onClick={onClose}
             className="rounded-lg p-1.5 text-ink-muted dark:text-ink-muted-dark hover:bg-emerald-50 dark:hover:bg-slate-700"

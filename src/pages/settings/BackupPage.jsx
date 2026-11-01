@@ -109,14 +109,14 @@ export default function BackupPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400">
+      {/* Header inside Argon Card */}
+      <div className="rounded-2xl border border-border/80 dark:border-border-dark bg-surface dark:bg-surface-dark p-5 shadow-argon flex items-center gap-3.5">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-tl from-emerald-800 to-emerald-600 text-white shadow-md shadow-emerald-900/20">
           <HardDrive className="h-5 w-5" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-ink dark:text-ink-dark">Backup & Recovery</h1>
-          <p className="text-sm text-ink-muted dark:text-ink-muted-dark">
+          <h1 className="text-lg sm:text-xl font-bold text-ink dark:text-ink-dark">Backup & Recovery</h1>
+          <p className="text-xs sm:text-sm text-ink-muted dark:text-ink-muted-dark">
             Unduh backup atau pulihkan data dari file backup.
           </p>
         </div>

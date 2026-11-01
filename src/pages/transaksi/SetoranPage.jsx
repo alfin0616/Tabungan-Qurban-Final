@@ -5,6 +5,7 @@ import toast from 'react-hot-toast'
 import { useCreateSetoran } from '../../hooks/useTransaksi'
 import { useAnggotaSelect } from '../../hooks/useAnggota'
 import { useSettings } from '../../hooks/useSettings'
+import { useAuth } from '../../context/AuthContext'
 import { Card, CardHeader, CardTitle } from '../../components/ui/Card'
 import Button from '../../components/ui/Button'
 import SetoranForm from '../../components/forms/SetoranForm'
@@ -17,6 +18,7 @@ export default function SetoranPage() {
   const createSetoran = useCreateSetoran()
   const { data: anggotaList } = useAnggotaSelect()
   const { data: settings } = useSettings()
+  const { instansiSaya } = useAuth()
   const [lastTransaksi, setLastTransaksi] = useState(null)
 
   async function handleSubmit(values) {
@@ -41,7 +43,8 @@ export default function SetoranPage() {
       nominal: lastTransaksi.nominal,
       metodePembayaran: lastTransaksi.metode_pembayaran,
       keterangan: lastTransaksi.keterangan,
-      namaInstansi: settings?.nama_instansi,
+      namaInstansi: instansiSaya?.nama_instansi || settings?.nama_instansi || 'SIQURBAN',
+      alamatInstansi: instansiSaya?.alamat || '',
     })
   }
 
