@@ -4,6 +4,8 @@ import { supabase } from '../api/supabaseClient'
 const AuthContext = createContext(undefined)
 
 const REMEMBER_KEY = 'tq_remember_email'
+const REMEMBER_SESSION_KEY = 'tq_remember_session'
+const SESSION_ACTIVE_KEY = 'tq_session_active'
 
 export function AuthProvider({ children }) {
   const [session, setSession] = useState(null)
@@ -15,14 +17,41 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     let mounted = true
 
+    const isRemembered = localStorage.getItem(REMEMBER_SESSION_KEY) === 'true'
+    const isSessionActive = sessionStorage.getItem(SESSION_ACTIVE_KEY) === '1'
+
     supabase.auth.getSession().then(({ data }) => {
       if (!mounted) return
+
+      // Jika user tidak mencentang "Ingat saya" dan APK/tab browser ditutup lalu dibuka lagi
+      // (sessionStorage kosong dan tq_remember_session bukan 'true'):
+      if (data?.session && !isRemembered && !isSessionActive) {
+        supabase.auth.signOut().finally(() => {
+          if (!mounted) return
+          setSession(null)
+          setProfile(null)
+          setAnggotaSaya(null)
+          setLoading(false)
+          setProfileLoading(false)
+        })
+        return
+      }
+
+      if (data?.session) {
+        // Tandai sesi aktif selama APK/tab ini berjalan (bertahan saat reload/F5)
+        sessionStorage.setItem(SESSION_ACTIVE_KEY, '1')
+      }
+
       setSession(data.session)
       setLoading(false)
     })
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, newSession) => {
+      if (!mounted) return
       setSession(newSession)
+      if (newSession) {
+        sessionStorage.setItem(SESSION_ACTIVE_KEY, '1')
+      }
     })
 
     return () => {
@@ -160,9 +189,12 @@ export function AuthProvider({ children }) {
 
     if (rememberMe) {
       localStorage.setItem(REMEMBER_KEY, email.trim())
+      localStorage.setItem(REMEMBER_SESSION_KEY, 'true')
     } else {
       localStorage.removeItem(REMEMBER_KEY)
+      localStorage.removeItem(REMEMBER_SESSION_KEY)
     }
+    sessionStorage.setItem(SESSION_ACTIVE_KEY, '1')
 
     if (data?.session) {
       setSession(data.session)
@@ -278,6 +310,7 @@ export function AuthProvider({ children }) {
     }
 
     if (authData?.session) {
+      sessionStorage.setItem(SESSION_ACTIVE_KEY, '1')
       setSession(authData.session)
     }
 
@@ -322,6 +355,7 @@ export function AuthProvider({ children }) {
     if (error) throw error
 
     if (data?.session) {
+      sessionStorage.setItem(SESSION_ACTIVE_KEY, '1')
       try {
         await supabase.rpc('set_active_jamaah_group', {
           p_instansi_id: instansiId,
@@ -374,6 +408,8 @@ export function AuthProvider({ children }) {
     import('../repositories/auditRepository').then(({ auditRepository }) => {
       auditRepository.log('LOGOUT', 'User logged out')
     })
+    localStorage.removeItem(REMEMBER_SESSION_KEY)
+    sessionStorage.removeItem(SESSION_ACTIVE_KEY)
     const { error } = await supabase.auth.signOut()
     if (error) throw error
     setSession(null)

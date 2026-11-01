@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { Phone, Lock, Building2, Users, Shield, User, KeyRound, ChevronDown } from 'lucide-react'
+import { Phone, Lock, Building2, Users, Shield, User, KeyRound, ChevronDown, Check } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { loginSchema } from '../../validations/authValidation'
 import { useAuth } from '../../context/AuthContext'
@@ -31,11 +31,14 @@ export default function LoginForm() {
     register,
     handleSubmit,
     setValue,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: '', password: '', rememberMe: false },
   })
+
+  const rememberMe = watch('rememberMe')
 
   useEffect(() => {
     const remembered = getRememberedEmail()
@@ -315,13 +318,23 @@ export default function LoginForm() {
         />
 
         <div className="flex items-center justify-between pt-0.5 text-xs sm:text-sm">
-          <label className="flex items-center gap-2 font-medium text-ink-muted dark:text-ink-muted-dark">
+          <label className="group flex items-center gap-2.5 font-medium text-ink-muted dark:text-ink-muted-dark cursor-pointer select-none">
             <input
               type="checkbox"
-              className="h-4 w-4 rounded border-border dark:border-border-dark text-emerald-600 focus:ring-emerald-500"
+              className="sr-only"
               {...register('rememberMe')}
             />
-            Ingat saya
+            <div
+              className={cn(
+                'flex h-5 w-5 shrink-0 items-center justify-center rounded-lg border transition-all duration-150',
+                rememberMe
+                  ? 'bg-emerald-600 border-emerald-600 text-white shadow-xs'
+                  : 'border-border dark:border-border-dark bg-white dark:bg-bg-dark group-hover:border-emerald-500'
+              )}
+            >
+              {rememberMe && <Check className="h-3.5 w-3.5 stroke-[3]" />}
+            </div>
+            <span className="font-medium text-ink dark:text-ink-dark">Ingat saya</span>
           </label>
           <Link to="/reset-password" className="font-semibold text-emerald-600 dark:text-emerald-400 hover:underline">
             Lupa password?
