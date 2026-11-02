@@ -100,7 +100,7 @@ export default function PengeluaranListPage() {
           </div>
         </CardHeader>
 
-        <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
           <Input label="Tanggal Mulai" type="date" value={tanggalMulai} onChange={(e) => setTanggalMulai(e.target.value)} />
           <Input label="Tanggal Akhir" type="date" value={tanggalAkhir} onChange={(e) => setTanggalAkhir(e.target.value)} />
           <Select

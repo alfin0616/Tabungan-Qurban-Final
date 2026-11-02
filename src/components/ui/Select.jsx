@@ -9,19 +9,19 @@ const Select = forwardRef(function Select(
   const selectId = id || props.name
 
   return (
-    <div className="flex flex-col gap-1.5">
+    <div className="flex min-w-0 flex-col gap-1.5">
       {label && (
         <label htmlFor={selectId} className="text-sm font-medium text-ink dark:text-ink-dark">
           {label}
           {required && <span className="ml-0.5 text-danger">*</span>}
         </label>
       )}
-      <div className="relative">
+      <div className="relative min-w-0">
         <select
           id={selectId}
           ref={ref}
           className={cn(
-            'h-10 w-full appearance-none rounded-xl border border-border dark:border-border-dark bg-white dark:bg-surface-dark px-3 pr-9 text-sm text-ink dark:text-ink-dark',
+            'h-11 w-full min-w-0 truncate appearance-none rounded-xl border border-border dark:border-border-dark bg-white dark:bg-surface-dark px-3 pr-9 text-sm text-ink dark:text-ink-dark',
             'focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20',
             error && 'border-danger focus:border-danger focus:ring-danger/20',
             className,

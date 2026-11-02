@@ -145,7 +145,7 @@ export default function RiwayatPage() {
           )}
         </CardHeader>
 
-        <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        <div className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-5">
           <Input
             label="Tanggal Mulai"
             type="date"
@@ -175,7 +175,7 @@ export default function RiwayatPage() {
               { value: 'penarikan', label: 'Penarikan' },
             ]}
           />
-          <div className="flex flex-col gap-1.5">
+          <div className="col-span-2 lg:col-span-1 flex flex-col gap-1.5">
             <label className="text-sm font-medium text-ink dark:text-ink-dark">Cari</label>
             <div className="relative">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted dark:text-ink-muted-dark" />
@@ -183,7 +183,7 @@ export default function RiwayatPage() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Nama anggota..."
-                className="h-10 w-full rounded-xl border border-border dark:border-border-dark bg-white dark:bg-surface-dark pl-9 pr-3 text-sm text-ink dark:text-ink-dark placeholder:text-ink-muted/60 dark:placeholder:text-ink-muted-dark/60 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                className="h-11 w-full rounded-xl border border-border dark:border-border-dark bg-white dark:bg-surface-dark pl-9 pr-3 text-sm text-ink dark:text-ink-dark placeholder:text-ink-muted/60 dark:placeholder:text-ink-muted-dark/60 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
               />
             </div>
           </div>

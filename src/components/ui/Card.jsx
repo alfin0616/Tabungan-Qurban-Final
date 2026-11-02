@@ -5,7 +5,7 @@ export const Card = memo(function Card({ className, children, ...props }) {
   return (
     <div
       className={cn(
-        'rounded-2xl border border-border/80 dark:border-border-dark bg-surface dark:bg-surface-dark p-5 shadow-argon',
+        'rounded-2xl border border-border/80 dark:border-border-dark bg-surface dark:bg-surface-dark p-4 sm:p-5 shadow-argon min-w-0',
         className,
       )}
       {...props}
@@ -17,7 +17,7 @@ export const Card = memo(function Card({ className, children, ...props }) {
 
 export const CardHeader = memo(function CardHeader({ className, children, ...props }) {
   return (
-    <div className={cn('mb-4 flex items-center justify-between', className)} {...props}>
+    <div className={cn('mb-4 flex flex-wrap items-center justify-between gap-3', className)} {...props}>
       {children}
     </div>
   )

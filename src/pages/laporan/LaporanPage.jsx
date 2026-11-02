@@ -285,7 +285,7 @@ export default function LaporanPage() {
 
             {/* Custom Date Range */}
             {isCustomPeriode && (
-              <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="mb-4 grid grid-cols-2 gap-3">
                 <div>
                   <label className="mb-1 block text-xs font-semibold text-ink-muted dark:text-ink-muted-dark">
                     Tanggal Mulai
