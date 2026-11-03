@@ -21,7 +21,11 @@ import {
   formatCurrency,
   calculateSkemaTabungan,
   LAMA_TABUNGAN_PRESETS,
+  DAFTAR_BULAN,
+  hitungLamaTabunganDariBulan,
+  getDaftarBulanRentang,
 } from '../../utils/formatCurrency'
+import { Calendar } from 'lucide-react'
 import Input from '../ui/Input'
 import Button from '../ui/Button'
 
@@ -34,6 +38,8 @@ export default function RegisterForm() {
   const [loadingInstansi, setLoadingInstansi] = useState(true)
   const [loadingKelompok, setLoadingKelompok] = useState(false)
   const [customLama, setCustomLama] = useState(false)
+  const [bulanMulai, setBulanMulai] = useState(7)
+  const [bulanSelesai, setBulanSelesai] = useState(4)
 
   const {
     register,
@@ -273,7 +279,13 @@ export default function RegisterForm() {
                   setCustomLama(true)
                 } else {
                   setCustomLama(false)
-                  setValue('lamaTabungan', Number(v), { shouldValidate: true })
+                  const numVal = Number(v)
+                  setValue('lamaTabungan', numVal, { shouldValidate: true })
+                  if (numVal === 10) {
+                    setBulanMulai(7) // Juli -> 10 bulan
+                  } else if (numVal === 12) {
+                    setBulanMulai(5) // Mei -> 12 bulan
+                  }
                 }
               }}
               className="h-11 block w-full rounded-xl border border-border dark:border-border-dark bg-white dark:bg-bg-dark px-3 text-xs sm:text-sm font-medium text-ink dark:text-ink-dark focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
@@ -285,6 +297,87 @@ export default function RegisterForm() {
               ))}
               <option value="custom">Bebas / Kustom Bulan...</option>
             </select>
+          </div>
+        </div>
+
+        {/* Fitur Pilihan Bulan & Hitung Otomatis Lama Tabungan */}
+        <div className="rounded-2xl border border-emerald-500/30 bg-emerald-50/60 dark:bg-emerald-950/25 p-3.5 space-y-3">
+          <div className="flex items-center justify-between gap-2">
+            <span className="font-bold text-xs text-ink dark:text-ink-dark flex items-center gap-1.5">
+              <Calendar className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+              Pilihan Bulan Mulai Menabung:
+            </span>
+            <span className="rounded-lg bg-emerald-600/15 px-2.5 py-1 text-xs font-extrabold text-emerald-700 dark:text-emerald-300">
+              Otomatis: {lamaTabungan} Bulan
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <div>
+              <label className="text-[11px] font-semibold text-ink-muted dark:text-ink-muted-dark block mb-1">
+                Mulai Bulan Tabungan:
+              </label>
+              <select
+                value={bulanMulai}
+                onChange={(e) => {
+                  const b = Number(e.target.value)
+                  setBulanMulai(b)
+                  const durasi = hitungLamaTabunganDariBulan(b, bulanSelesai)
+                  setValue('lamaTabungan', durasi, { shouldValidate: true })
+                  setCustomLama(false)
+                }}
+                className="h-10 w-full rounded-xl border border-emerald-500/40 bg-white dark:bg-bg-dark px-3 text-xs font-bold text-ink dark:text-ink-dark focus:border-emerald-600 focus:outline-none cursor-pointer"
+              >
+                {DAFTAR_BULAN.map((b) => {
+                  const durasi = hitungLamaTabunganDariBulan(b.value, bulanSelesai)
+                  return (
+                    <option key={b.value} value={b.value}>
+                      Bulan {b.label} {b.value === 7 ? '⭐ (Otomatis 10 Bulan - Standar Qurban)' : `(Otomatis ${durasi} Bulan)`}
+                    </option>
+                  )
+                })}
+              </select>
+            </div>
+
+            <div>
+              <label className="text-[11px] font-semibold text-ink-muted dark:text-ink-muted-dark block mb-1">
+                Target Pelaksanaan Qurban:
+              </label>
+              <select
+                value={bulanSelesai}
+                onChange={(e) => {
+                  const end = Number(e.target.value)
+                  setBulanSelesai(end)
+                  const durasi = hitungLamaTabunganDariBulan(bulanMulai, end)
+                  setValue('lamaTabungan', durasi, { shouldValidate: true })
+                }}
+                className="h-10 w-full rounded-xl border border-border dark:border-border-dark bg-white dark:bg-bg-dark px-3 text-xs font-medium text-ink dark:text-ink-dark focus:border-emerald-600 focus:outline-none cursor-pointer"
+              >
+                <option value={4}>Bulan April (Sebelum Hari Raya Mei)</option>
+                <option value={5}>Bulan Mei (Bulan Hari Raya Qurban)</option>
+                <option value={6}>Bulan Juni</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="pt-0.5 border-t border-emerald-500/20">
+            <div className="text-[11px] text-ink-muted dark:text-ink-muted-dark mb-1.5 flex items-center justify-between">
+              <span>Rincian {lamaTabungan} Bulan Setoran:</span>
+              <span className="font-bold text-emerald-700 dark:text-emerald-300">
+                {DAFTAR_BULAN.find((b) => b.value === Number(bulanMulai))?.label} ➔ {DAFTAR_BULAN.find((b) => b.value === Number(bulanSelesai))?.label}
+              </span>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {getDaftarBulanRentang(bulanMulai, lamaTabungan).map((bln, idx) => (
+                <span
+                  key={idx}
+                  className="inline-flex items-center gap-1 rounded-lg border border-emerald-500/30 bg-white dark:bg-bg-dark px-2 py-0.5 text-[10px] font-bold text-emerald-800 dark:text-emerald-300 shadow-2xs"
+                >
+                  <span className="text-ink-muted dark:text-ink-muted-dark font-normal">#{idx + 1}</span>
+                  <span>{bln}</span>
+                </span>
+              ))}
+            </div>
           </div>
         </div>
 

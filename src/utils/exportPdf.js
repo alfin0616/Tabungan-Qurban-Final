@@ -31,35 +31,68 @@ export async function exportLaporanPdf({
   const marginX = 14
 
   // ── 1. Header Kop Surat Resmi (Deep Emerald) ────────────────────────────────
+  // Lebar area teks kiri dibatasi agar tidak menabrak badge "Dokumen Resmi" di kanan.
+  const badgeW = 46
+  const textMaxW = pageWidth - marginX * 2 - badgeW - 6
+
+  // Judul: kecilkan font bila perlu, lalu bungkus ke beberapa baris (tanpa dipotong)
+  const titleText = String(title).toUpperCase()
+  doc.setFont('helvetica', 'bold')
+  let titleSize = 15
+  let titleLines = []
+  while (titleSize >= 11) {
+    doc.setFontSize(titleSize)
+    titleLines = doc.splitTextToSize(titleText, textMaxW)
+    if (titleLines.length <= 2) break
+    titleSize -= 1
+  }
+  doc.setFontSize(titleSize)
+  titleLines = doc.splitTextToSize(titleText, textMaxW)
+  const titleLineH = titleSize * 0.42
+
+  const subtitleText = subtitle || `Dicetak pada ${formatDate(new Date(), 'd MMMM yyyy')}`
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(9)
+  const subtitleLines = doc.splitTextToSize(subtitleText, textMaxW)
+
+  doc.setFontSize(8)
+  const alamatLines = alamatInstansi ? doc.splitTextToSize(String(alamatInstansi), textMaxW) : []
+
+  // Hitung tinggi kop secara dinamis
+  const titleStartY = 13 + titleLineH
+  const subtitleStartY = titleStartY + (titleLines.length - 1) * titleLineH + 6
+  const alamatStartY = subtitleStartY + (subtitleLines.length - 1) * 4 + 4.8
+  const contentBottom = alamatLines.length
+    ? alamatStartY + (alamatLines.length - 1) * 3.6
+    : subtitleStartY + (subtitleLines.length - 1) * 4
+  const headerH = Math.max(34, contentBottom + 4.5)
+
   doc.setFillColor(6, 78, 59) // Deep Emerald 900
-  doc.rect(0, 0, pageWidth, 34, 'F')
+  doc.rect(0, 0, pageWidth, headerH, 'F')
 
   // Garis Aksen Hijau Emerald di Bawah Kop
   doc.setFillColor(16, 185, 129)
-  doc.rect(0, 34, pageWidth, 1.8, 'F')
+  doc.rect(0, headerH, pageWidth, 1.8, 'F')
 
   // Teks Kiri Kop Surat
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(8)
   doc.setTextColor(167, 243, 208)
-  doc.text('SISTEM INFORMASI MANAJEMEN TABUNGAN QURBAN (SIQURBAN)', marginX, 11)
+  doc.text('SISTEM INFORMASI MANAJEMEN TABUNGAN QURBAN (SIQURBAN)', marginX, 10)
 
   doc.setFont('helvetica', 'bold')
-  doc.setFontSize(15)
+  doc.setFontSize(titleSize)
   doc.setTextColor(255, 255, 255)
-  doc.text(String(title).toUpperCase().slice(0, 52), marginX, 19)
+  doc.text(titleLines, marginX, titleStartY, { lineHeightFactor: 1.2 })
 
   doc.setFont('helvetica', 'normal')
   doc.setFontSize(9)
   doc.setTextColor(209, 250, 229)
-  doc.text(
-    subtitle || `Dicetak pada ${formatDate(new Date(), 'd MMMM yyyy')}`,
-    marginX,
-    25.5,
-  )
-  if (alamatInstansi) {
+  doc.text(subtitleLines, marginX, subtitleStartY, { lineHeightFactor: 1.25 })
+
+  if (alamatLines.length) {
     doc.setFontSize(8)
-    doc.text(String(alamatInstansi).slice(0, 75), marginX, 30.5)
+    doc.text(alamatLines, marginX, alamatStartY, { lineHeightFactor: 1.25 })
   }
 
   // Kotak Badge Kanan Kop Surat
@@ -79,7 +112,7 @@ export async function exportLaporanPdf({
     align: 'center',
   })
 
-  let currentY = 43
+  let currentY = headerH + 9
 
   // ── 2. Kartu Ringkasan Eksekutif (Summary KPI Boxes) di Atas Tabel ──────────
   if (summary && summary.length > 0) {
@@ -199,7 +232,7 @@ export async function exportLaporanPdf({
 
   // ── 4. Kotak Rekapitulasi Akhir & Blok Tanda Tangan Pengesahan ──────────────
   let afterTableY = (doc.lastAutoTable?.finalY || currentY + 20) + 10
-  if (afterTableY + 52 > pageHeight - 18) {
+  if (afterTableY + 60 > pageHeight - 18) {
     doc.addPage()
     afterTableY = 22
   }
@@ -272,8 +305,10 @@ export async function exportLaporanPdf({
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(8.5)
   doc.setTextColor(15, 23, 42)
-  doc.text(`( Pengurus ${String(namaInstansi || 'SIQURBAN').slice(0, 22)} )`, signCenterX, afterTableY + 38, {
+  const signLines = doc.splitTextToSize(`( Pengurus ${String(namaInstansi || 'SIQURBAN')} )`, 70)
+  doc.text(signLines, signCenterX, afterTableY + 38, {
     align: 'center',
+    lineHeightFactor: 1.25,
   })
 
   // ── 5. Footer & Nomor Halaman di Setiap Halaman ─────────────────────────────

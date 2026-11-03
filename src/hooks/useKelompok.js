@@ -29,6 +29,8 @@ export function useCreateKelompok() {
     mutationFn: kelompokRepo.createKelompok,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: KEYS.all })
+      queryClient.invalidateQueries({ queryKey: ['tabungan'] })
+      queryClient.invalidateQueries({ queryKey: ['anggota'] })
     },
   })
 }
@@ -36,9 +38,12 @@ export function useCreateKelompok() {
 export function useUpdateKelompok() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ id, ...payload }) => kelompokRepo.updateKelompok(id, payload),
+    mutationFn: ({ id, syncMembersTarget, ...payload }) =>
+      kelompokRepo.updateKelompok(id, payload, syncMembersTarget),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: KEYS.all })
+      queryClient.invalidateQueries({ queryKey: ['tabungan'] })
+      queryClient.invalidateQueries({ queryKey: ['anggota'] })
     },
   })
 }

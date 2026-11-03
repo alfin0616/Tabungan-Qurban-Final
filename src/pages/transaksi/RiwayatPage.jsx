@@ -145,7 +145,7 @@ export default function RiwayatPage() {
           )}
         </CardHeader>
 
-        <div className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-5">
+        <div className="mb-4 grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-3">
           <Input
             label="Tanggal Mulai"
             type="date"
@@ -158,23 +158,30 @@ export default function RiwayatPage() {
             value={tanggalAkhir}
             onChange={(e) => setTanggalAkhir(e.target.value)}
           />
-          <Select
-            label="Anggota"
-            value={anggotaId}
-            onChange={(e) => setAnggotaId(e.target.value)}
-            placeholder="Semua anggota"
-            options={(anggotaList ?? []).map((a) => ({ value: a.id, label: a.nama }))}
-          />
-          <Select
-            label="Jenis"
-            value={jenis}
-            onChange={(e) => setJenis(e.target.value)}
-            options={[
-              { value: 'semua', label: 'Semua Jenis' },
-              { value: 'setoran', label: 'Setoran' },
-              { value: 'penarikan', label: 'Penarikan' },
-            ]}
-          />
+          <div className="col-span-2 sm:col-span-1">
+            <Select
+              label="Anggota"
+              value={anggotaId}
+              onChange={(e) => setAnggotaId(e.target.value)}
+              placeholder="Semua anggota"
+              options={(anggotaList ?? []).map((a) => ({
+                value: a.id,
+                label: a.kode_anggota ? `${a.nama} (${a.kode_anggota})` : a.nama,
+              }))}
+            />
+          </div>
+          <div className="col-span-2 sm:col-span-1">
+            <Select
+              label="Jenis"
+              value={jenis}
+              onChange={(e) => setJenis(e.target.value)}
+              options={[
+                { value: 'semua', label: 'Semua Jenis' },
+                { value: 'setoran', label: 'Setoran' },
+                { value: 'penarikan', label: 'Penarikan' },
+              ]}
+            />
+          </div>
           <div className="col-span-2 lg:col-span-1 flex flex-col gap-1.5">
             <label className="text-sm font-medium text-ink dark:text-ink-dark">Cari</label>
             <div className="relative">

@@ -42,13 +42,15 @@ export default function SetoranForm({ onSubmit, defaultAnggotaId, loading }) {
     const rawTb = Array.isArray(found.tabungan) ? found.tabungan[0] : found.tabungan
     const target = Number(rawTb?.target || 3000000)
     const saldo = Number(rawTb?.saldo || 0)
+    const periode = found.periode_setoran || rawTb?.periode_setoran || 'bulanan'
+    const lamaBulan = Number(found.lama_tabungan || rawTb?.lama_tabungan || 12)
     return {
       anggota: found,
       ...calculateSkemaTabungan({
         target,
         saldo,
-        periode: found.periode_setoran || 'bulanan',
-        lamaBulan: found.lama_tabungan || 12,
+        periode,
+        lamaBulan,
       }),
     }
   }, [anggotaList, selectedAnggotaId])
@@ -80,10 +82,15 @@ export default function SetoranForm({ onSubmit, defaultAnggotaId, loading }) {
             required
             placeholder="Pilih anggota"
             error={errors.anggota_id?.message}
-            options={(anggotaList ?? []).map((a) => ({
-              value: a.id,
-              label: `${a.nama} — ${a.kode_anggota} (${(a.periode_setoran || 'bulanan') === 'mingguan' ? 'Mingguan' : 'Bulanan'} • ${a.lama_tabungan || 12} Bln)`,
-            }))}
+            options={(anggotaList ?? []).map((a) => {
+              const tb = Array.isArray(a.tabungan) ? a.tabungan[0] : a.tabungan
+              const per = a.periode_setoran || tb?.periode_setoran || 'bulanan'
+              const lama = Number(a.lama_tabungan || tb?.lama_tabungan || 12)
+              return {
+                value: a.id,
+                label: `${a.nama} — ${a.kode_anggota} (${per === 'mingguan' ? 'Mingguan' : 'Bulanan'} • ${lama} Bln)`,
+              }
+            })}
             {...field}
           />
         )}

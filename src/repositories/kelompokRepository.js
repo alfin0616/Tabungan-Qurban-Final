@@ -78,9 +78,21 @@ export async function createKelompok(payload) {
   return data
 }
 
-export async function updateKelompok(id, payload) {
+export async function updateKelompok(id, payload, syncMembersTarget = false) {
   const { data, error } = await supabase.from(TABLE).update(payload).eq('id', id).select().single()
   if (error) throw error
+
+  if (syncMembersTarget && data?.target_dana) {
+    const max = Number(data.maksimal_anggota || (data.jenis_qurban === 'kambing' ? 1 : 7))
+    const targetPerAnggota = max > 0 ? Math.round(Number(data.target_dana) / max) : Number(data.target_dana)
+    try {
+      const { syncTargetByKelompok } = await import('./tabunganRepository')
+      await syncTargetByKelompok(id, targetPerAnggota)
+    } catch (e) {
+      console.warn('Gagal sinkronkan target anggota kelompok:', e)
+    }
+  }
+
   return data
 }
 

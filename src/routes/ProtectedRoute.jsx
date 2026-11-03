@@ -15,7 +15,7 @@ export default function ProtectedRoute() {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace state={{ from: location }} />
+    return <Navigate to="/login" replace />
   }
 
   // Jamaah yang akunnya belum dihubungkan ke data anggota manapun wajib

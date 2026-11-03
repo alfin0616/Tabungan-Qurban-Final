@@ -31,24 +31,45 @@ export function enrichRowWithSkema(row) {
   const map = getLocalSkemaMap()
   const anggotaId = row.anggota_id || row.anggota?.id || row.id
   const saved = anggotaId ? map[anggotaId] : null
+  const tbRow = Array.isArray(row.tabungan) ? row.tabungan[0] : row.tabungan
 
+  // Prioritas penentuan skema:
+  // 1. Data tabungan langsung (karena user mengatur skema di menu Tabungan)
+  // 2. Data anggota langsung
+  // 3. Data di localSkemaMap
+  // 4. Default: bulanan & 12 bulan
   const periode_setoran =
+    tbRow?.periode_setoran ||
     row.periode_setoran ||
     row.anggota?.periode_setoran ||
     saved?.periode_setoran ||
     'bulanan'
 
   const lama_tabungan = Number(
-    row.lama_tabungan ||
+    tbRow?.lama_tabungan ||
+      row.lama_tabungan ||
       row.anggota?.lama_tabungan ||
       saved?.lama_tabungan ||
       12,
   )
 
+  const enrichedTb = tbRow
+    ? {
+        ...tbRow,
+        periode_setoran,
+        lama_tabungan,
+      }
+    : null
+
   return {
     ...row,
     periode_setoran,
     lama_tabungan,
+    ...(tbRow
+      ? {
+          tabungan: Array.isArray(row.tabungan) ? [enrichedTb] : enrichedTb,
+        }
+      : {}),
     ...(row.anggota
       ? {
           anggota: {
@@ -64,10 +85,26 @@ export function enrichRowWithSkema(row) {
 export async function getTabunganList() {
   const { data, error } = await supabase
     .from(TABLE)
-    .select('*, anggota:anggota_id (id, nama, kode_anggota, no_hp, tanggal_bergabung, foto, status)')
+    .select(
+      '*, anggota:anggota_id (id, nama, kode_anggota, no_hp, tanggal_bergabung, foto, status, periode_setoran, lama_tabungan, kelompok_id, kelompok:kelompok_id (id, nama_kelompok, target_dana, jenis_qurban, maksimal_anggota))',
+    )
     .order('saldo', { ascending: false })
   if (error) throw error
-  return (data || []).map(enrichRowWithSkema)
+
+  const mapped = (data || []).map(enrichRowWithSkema)
+
+  // Otomatis sinkronkan local map agar menu lain (seperti Form Setoran) langsung mendapatkan skema terbaru
+  mapped.forEach((t) => {
+    const aid = t.anggota_id || t.anggota?.id
+    if (aid && (t.periode_setoran || t.lama_tabungan)) {
+      saveLocalSkema(aid, {
+        periode_setoran: t.periode_setoran,
+        lama_tabungan: t.lama_tabungan,
+      })
+    }
+  })
+
+  return mapped
 }
 
 export async function getTabunganByAnggota(anggotaId) {
@@ -87,49 +124,76 @@ export async function updateTargetTabungan(id, target, extra = {}) {
     saveLocalSkema(anggota_id, { periode_setoran, lama_tabungan })
   }
 
-  // Coba update lengkap termasuk kolom skema (jika migrasi SQL sudah dijalankan)
-  if (periode_setoran || lama_tabungan) {
-    const fullPayload = {
-      target,
-      ...(periode_setoran ? { periode_setoran } : {}),
-      ...(lama_tabungan ? { lama_tabungan: Number(lama_tabungan) } : {}),
-    }
-    const { data: fullData, error: fullErr } = await supabase
-      .from(TABLE)
-      .update(fullPayload)
-      .eq('id', id)
-      .select()
-      .maybeSingle()
-
-    if (!fullErr && fullData) {
-      if (anggota_id) {
-        await supabase
-          .from('anggota')
-          .update({
-            ...(periode_setoran ? { periode_setoran } : {}),
-            ...(lama_tabungan ? { lama_tabungan: Number(lama_tabungan) } : {}),
-          })
-          .eq('id', anggota_id)
-          .then(() => {})
-      }
-      return enrichRowWithSkema(fullData)
-    }
+  const numTarget = Number(target) || 0
+  const fullPayload = {
+    target: numTarget,
+    ...(periode_setoran ? { periode_setoran } : {}),
+    ...(lama_tabungan ? { lama_tabungan: Math.max(1, Number(lama_tabungan)) } : {}),
   }
 
-  // Fallback jika kolom baru belum dimigrasi di database
-  const { data, error } = await supabase
+  // 1. Update tabel tabungan
+  const { data: fullData, error: fullErr } = await supabase
     .from(TABLE)
-    .update({ target })
+    .update(fullPayload)
     .eq('id', id)
     .select()
-    .single()
-  if (error) throw error
-  return enrichRowWithSkema({
-    ...data,
-    ...(anggota_id ? { anggota_id } : {}),
-    ...(periode_setoran ? { periode_setoran } : {}),
-    ...(lama_tabungan ? { lama_tabungan: Number(lama_tabungan) } : {}),
-  })
+    .maybeSingle()
+
+  // 2. Pastikan tabel anggota juga tersinkronisasi
+  if (anggota_id) {
+    await supabase
+      .from('anggota')
+      .update({
+        ...(periode_setoran ? { periode_setoran } : {}),
+        ...(lama_tabungan ? { lama_tabungan: Math.max(1, Number(lama_tabungan)) } : {}),
+      })
+      .eq('id', anggota_id)
+      .then(() => {})
+  }
+
+  if (fullErr) {
+    // Fallback jika kolom periode_setoran/lama_tabungan belum ada di tabel tabungan
+    const { data: fallbackData, error: fallbackErr } = await supabase
+      .from(TABLE)
+      .update({ target: numTarget })
+      .eq('id', id)
+      .select()
+      .single()
+    if (fallbackErr) throw fallbackErr
+    return enrichRowWithSkema({
+      ...fallbackData,
+      anggota_id,
+      ...fullPayload,
+    })
+  }
+
+  return enrichRowWithSkema(fullData || { id, ...fullPayload, anggota_id })
+}
+
+/**
+ * Sinkronkan target tabungan seluruh anggota di satu kelompok qurban.
+ */
+export async function syncTargetByKelompok(kelompokId, targetPerAnggota) {
+  if (!kelompokId) return []
+  const numTarget = Number(targetPerAnggota) || 0
+
+  const { data: members, error: mErr } = await supabase
+    .from('anggota')
+    .select('id')
+    .eq('kelompok_id', kelompokId)
+
+  if (mErr) throw mErr
+  if (!members || !members.length) return []
+
+  const memberIds = members.map((m) => m.id)
+
+  const { error: tErr } = await supabase
+    .from(TABLE)
+    .update({ target: numTarget })
+    .in('anggota_id', memberIds)
+
+  if (tErr) throw tErr
+  return memberIds
 }
 
 export async function updateStatusTabungan(id, status) {

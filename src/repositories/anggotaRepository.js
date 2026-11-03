@@ -215,7 +215,9 @@ export async function getAnggotaSaya(userId) {
 export async function getAllAnggotaForSelect() {
   const { data, error } = await supabase
     .from(TABLE)
-    .select('id, nama, kode_anggota, kelompok_id, tabungan(saldo, target)')
+    .select(
+      'id, nama, kode_anggota, kelompok_id, periode_setoran, lama_tabungan, tabungan(id, saldo, target, periode_setoran, lama_tabungan), kelompok:kelompok_id(id, nama_kelompok, target_dana, jenis_qurban, maksimal_anggota)',
+    )
     .eq('status', true)
     .order('nama', { ascending: true })
   if (error) throw error

@@ -33,10 +33,55 @@ export function formatChartAxisCurrency(value = 0) {
   return `Rp ${Math.round(num)}`
 }
 
+export const DAFTAR_BULAN = [
+  { value: 1, label: 'Januari', short: 'Jan' },
+  { value: 2, label: 'Februari', short: 'Feb' },
+  { value: 3, label: 'Maret', short: 'Mar' },
+  { value: 4, label: 'April', short: 'Apr' },
+  { value: 5, label: 'Mei', short: 'Mei' },
+  { value: 6, label: 'Juni', short: 'Jun' },
+  { value: 7, label: 'Juli', short: 'Jul' },
+  { value: 8, label: 'Agustus', short: 'Agu' },
+  { value: 9, label: 'September', short: 'Sep' },
+  { value: 10, label: 'Oktober', short: 'Okt' },
+  { value: 11, label: 'November', short: 'Nov' },
+  { value: 12, label: 'Desember', short: 'Des' },
+]
+
+export const DEFAULT_BULAN_TARGET_QURBAN = 4 // April (sebelum pelaksanaan Idul Adha)
+
+/**
+ * Menghitung lama tabungan (bulan) dari bulan mulai sampai bulan target qurban.
+ * Contoh: Mulai Juli (bulan 7) sampai April (bulan 4) -> 10 Bulan!
+ */
+export function hitungLamaTabunganDariBulan(bulanMulai, bulanSelesai = DEFAULT_BULAN_TARGET_QURBAN) {
+  const start = Number(bulanMulai)
+  const end = Number(bulanSelesai)
+  if (!start || !end) return 10
+  if (end >= start) {
+    return end - start + 1
+  }
+  return (12 - start + 1) + end
+}
+
+/**
+ * Menghasilkan daftar nama-nama bulan yang dilalui dari bulanMulai selama lamaBulan
+ */
+export function getDaftarBulanRentang(bulanMulai = 7, lamaBulan = 10) {
+  const start = Number(bulanMulai) || 7
+  const count = Math.min(24, Math.max(1, Number(lamaBulan) || 10))
+  const result = []
+  for (let i = 0; i < count; i++) {
+    const mIdx = (start - 1 + i) % 12
+    result.push(DAFTAR_BULAN[mIdx].short)
+  }
+  return result
+}
+
 export const LAMA_TABUNGAN_PRESETS = [
   { value: 6, label: '6 Bulan' },
-  { value: 10, label: '10 Bulan' },
-  { value: 12, label: '12 Bulan (1 Tahun)' },
+  { value: 10, label: '10 Bulan (Mulai Juli • Standar Qurban)' },
+  { value: 12, label: '12 Bulan (1 Tahun Penuh)' },
   { value: 18, label: '18 Bulan (1,5 Tahun)' },
   { value: 24, label: '24 Bulan (2 Tahun)' },
   { value: 30, label: '30 Bulan (2,5 Tahun)' },

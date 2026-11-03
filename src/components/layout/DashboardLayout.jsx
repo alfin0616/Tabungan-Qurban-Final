@@ -106,9 +106,9 @@ export default function DashboardLayout() {
               </div>
             ) : (
               instansiSaya?.nama_instansi && (
-                <div className="inline-flex items-center gap-2 self-start sm:self-auto rounded-xl bg-white/15 backdrop-blur-xs border border-white/20 px-3.5 py-2 text-xs font-semibold text-white shadow-xs">
-                  <span className="h-2 w-2 rounded-full bg-emerald-300 animate-pulse" />
-                  <span>Panel Instansi: {instansiSaya.nama_instansi}</span>
+                <div className="inline-flex max-w-full items-start gap-2 self-start sm:self-auto sm:max-w-[50%] rounded-xl bg-white/15 backdrop-blur-xs border border-white/20 px-3.5 py-2 text-xs font-semibold text-white shadow-xs">
+                  <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-emerald-300 animate-pulse" />
+                  <span className="break-words leading-snug">Panel Instansi: {instansiSaya.nama_instansi}</span>
                 </div>
               )
             )}
@@ -117,9 +117,17 @@ export default function DashboardLayout() {
 
         <main
           className={cn(
-            'safe-bottom relative z-10 -mt-14 flex-1 min-w-0 w-full px-4 pb-6 lg:px-6',
-            isJamaah && 'pb-24 lg:pb-6',
+            'relative z-10 -mt-14 flex-1 min-w-0 w-full px-4 lg:px-6',
+            isJamaah ? 'mobile-bottom-nav-pad pb-36 lg:pb-8' : 'pb-8 lg:pb-8',
           )}
+          style={
+            isJamaah
+              ? {
+                  paddingBottom:
+                    'calc(5.5rem + env(safe-area-inset-bottom, 16px) + 1.5rem)',
+                }
+              : undefined
+          }
         >
           <Outlet />
         </main>

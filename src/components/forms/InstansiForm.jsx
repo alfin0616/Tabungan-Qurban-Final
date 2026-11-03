@@ -72,6 +72,16 @@ export default function InstansiForm({ initialData, onSubmit, onCancel, isSubmit
         />
       </div>
 
+      {/* Catatan Fleksibilitas Target: Ditentukan per Kelompok */}
+      <div className="rounded-xl border border-indigo-200 dark:border-indigo-800/60 bg-indigo-50/40 dark:bg-indigo-950/20 p-3 space-y-1 text-xs">
+        <p className="font-bold text-indigo-900 dark:text-indigo-300">
+          Target Tabungan Qurban Bersifat Opsional di Tingkat Instansi
+        </p>
+        <p className="text-ink-muted dark:text-ink-muted-dark leading-relaxed">
+          Target dana dan tabungan ditentukan secara spesifik dan fleksibel pada masing-masing <strong>Kelompok Qurban</strong> (Sapi 1/7 atau Kambing 1/1), bukan target kaku per instansi.
+        </p>
+      </div>
+
       {/* Seksi Rekening Bank Instansi */}
       <div className="rounded-xl border border-emerald-200 dark:border-emerald-800/60 bg-emerald-50/40 dark:bg-emerald-950/20 p-3.5 space-y-3">
         <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300">

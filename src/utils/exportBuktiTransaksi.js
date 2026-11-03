@@ -92,14 +92,42 @@ export function cetakBuktiTransaksi({
   doc.roundedRect(6, 6, pageWidth - 12, pageHeight - 12, 3, 3, 'S')
 
   // ── 2. Header Kop Surat Profesional (Deep Emerald) ──────────────────────────
+  // Area teks kiri dibatasi agar tidak menabrak badge di kanan; nama instansi
+  // panjang dibungkus ke beberapa baris (tidak dipotong).
+  const headerTextMaxW = pageWidth - 12 - 49 - 4 // dari x=12 hingga sebelum badge
+  doc.setFont('helvetica', 'bold')
+  let instansiSize = 13
+  let instansiLines = []
+  while (instansiSize >= 9.5) {
+    doc.setFontSize(instansiSize)
+    instansiLines = doc.splitTextToSize(instansiTitle, headerTextMaxW)
+    if (instansiLines.length <= 2) break
+    instansiSize -= 0.5
+  }
+  doc.setFontSize(instansiSize)
+  instansiLines = doc.splitTextToSize(instansiTitle, headerTextMaxW)
+  const instansiLineH = instansiSize * 0.42
+
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(8)
+  const alamatText = alamatInstansi
+    ? String(alamatInstansi)
+    : 'Kwitansi Resmi Bukti Transaksi Keuangan Tabungan Qurban'
+  const alamatLines = doc.splitTextToSize(alamatText, headerTextMaxW)
+
+  const instansiY = 15.5 + instansiLineH
+  const alamatY = instansiY + (instansiLines.length - 1) * instansiLineH + 5
+  const refY = alamatY + (alamatLines.length - 1) * 3.5 + 5
+  const headerBottom = Math.max(37, refY + 4.5) // posisi y garis aksen
+
   doc.setFillColor(6, 78, 59) // Deep Emerald 900
-  doc.roundedRect(6, 6, pageWidth - 12, 31, 3, 3, 'F')
+  doc.roundedRect(6, 6, pageWidth - 12, headerBottom - 6, 3, 3, 'F')
   // Tutup sudut bawah header agar rata
-  doc.rect(6, 30, pageWidth - 12, 7, 'F')
+  doc.rect(6, headerBottom - 7, pageWidth - 12, 7, 'F')
 
   // Garis Aksen Emas / Emerald Muda di Bawah Header
   doc.setFillColor(16, 185, 129)
-  doc.rect(6, 36.2, pageWidth - 12, 1.5, 'F')
+  doc.rect(6, headerBottom - 0.8, pageWidth - 12, 1.5, 'F')
 
   // Teks Kiri Header: Instansi & Sistem
   doc.setTextColor(167, 243, 208) // Emerald 200
@@ -109,20 +137,14 @@ export function cetakBuktiTransaksi({
 
   doc.setTextColor(255, 255, 255)
   doc.setFont('helvetica', 'bold')
-  doc.setFontSize(13)
-  doc.text(instansiTitle.slice(0, 32), 12, 20.5)
+  doc.setFontSize(instansiSize)
+  doc.text(instansiLines, 12, instansiY, { lineHeightFactor: 1.2 })
 
   doc.setFont('helvetica', 'normal')
   doc.setFontSize(8)
   doc.setTextColor(209, 250, 229)
-  doc.text(
-    alamatInstansi
-      ? String(alamatInstansi).slice(0, 48)
-      : 'Kwitansi Resmi Bukti Transaksi Keuangan Tabungan Qurban',
-    12,
-    26,
-  )
-  doc.text(`No. Referensi: ${nomorReferensi}`, 12, 31.5)
+  doc.text(alamatLines, 12, alamatY, { lineHeightFactor: 1.25 })
+  doc.text(`No. Referensi: ${nomorReferensi}`, 12, refY)
 
   // Kotak Badge Kanan Header: Jenis Dokumen
   doc.setFillColor(255, 255, 255)
@@ -142,7 +164,7 @@ export function cetakBuktiTransaksi({
   }
 
   // ── 3. Strip Status & Tanggal Transaksi ─────────────────────────────────────
-  let y = 44
+  let y = headerBottom + 7
   doc.setFillColor(248, 250, 252)
   doc.setDrawColor(226, 232, 240)
   doc.setLineWidth(0.25)
@@ -169,7 +191,7 @@ export function cetakBuktiTransaksi({
   }
 
   // ── 4. Tabel Rincian Data Jamaah & Transaksi ────────────────────────────────
-  y = 58
+  y = headerBottom + 21
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(8.5)
   doc.setTextColor(6, 78, 59)
@@ -187,11 +209,17 @@ export function cetakBuktiTransaksi({
   ]
 
   const rowHeight = 8.2
-  const tableStartY = y
   const tableWidth = pageWidth - 24
+  const valueX = 62
+  const valueMaxW = 12 + tableWidth - valueX - 3
+  let rowY = y
 
   detailRows.forEach(([label, value], idx) => {
-    const currentY = tableStartY + idx * rowHeight
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(8.5)
+    const valLines = doc.splitTextToSize(String(value ?? '-'), valueMaxW)
+    const thisRowH = rowHeight + (valLines.length - 1) * 3.8
+
     // Zebra background
     if (idx % 2 === 0) {
       doc.setFillColor(248, 250, 252)
@@ -200,22 +228,29 @@ export function cetakBuktiTransaksi({
     }
     doc.setDrawColor(226, 232, 240)
     doc.setLineWidth(0.2)
-    doc.rect(12, currentY, tableWidth, rowHeight, 'FD')
+    doc.rect(12, rowY, tableWidth, thisRowH, 'FD')
 
     doc.setFont('helvetica', 'normal')
     doc.setFontSize(8.5)
     doc.setTextColor(100, 116, 139)
-    doc.text(label, 16, currentY + 5.5)
+    doc.text(label, 16, rowY + 5.5)
 
     doc.setFont('helvetica', 'bold')
     doc.setTextColor(15, 23, 42)
-    const valStr = String(value ?? '-')
-    doc.text(valStr.length > 42 ? `${valStr.slice(0, 42)}...` : valStr, 62, currentY + 5.5)
+    doc.text(valLines, valueX, rowY + 5.5, { lineHeightFactor: 1.25 })
+
+    rowY += thisRowH
   })
 
-  y = tableStartY + detailRows.length * rowHeight + 7
+  y = rowY + 7
 
   // ── 5. Kotak Highlight Nominal & Terbilang (Hero Box) ───────────────────────
+  doc.setFont('helvetica', 'bolditalic')
+  doc.setFontSize(8)
+  const teksTerbilang = `Terbilang: # ${terbilangRupiah(nominal)} #`
+  const terbilangLines = doc.splitTextToSize(teksTerbilang, tableWidth - 8)
+  const heroH = 26 + (terbilangLines.length - 1) * 3.6
+
   if (isSetoran) {
     doc.setFillColor(236, 253, 245) // Emerald 50
     doc.setDrawColor(16, 185, 129) // Emerald 500
@@ -224,7 +259,7 @@ export function cetakBuktiTransaksi({
     doc.setDrawColor(239, 68, 68) // Rose 500
   }
   doc.setLineWidth(0.45)
-  doc.roundedRect(12, y, tableWidth, 26, 2.5, 2.5, 'FD')
+  doc.roundedRect(12, y, tableWidth, heroH, 2.5, 2.5, 'FD')
 
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(8)
@@ -252,10 +287,9 @@ export function cetakBuktiTransaksi({
   doc.setFont('helvetica', 'bolditalic')
   doc.setFontSize(8)
   doc.setTextColor(30, 41, 59)
-  const teksTerbilang = `Terbilang: # ${terbilangRupiah(nominal)} #`
-  doc.text(teksTerbilang.slice(0, 68), 16, y + 21.5)
+  doc.text(terbilangLines, 16, y + 21.5, { lineHeightFactor: 1.25 })
 
-  y += 35
+  y += heroH + 9
 
   // ── 6. Blok Tanda Tangan & Stempel Verifikasi ───────────────────────────────
   const leftColCenter = 36
@@ -289,11 +323,15 @@ export function cetakBuktiTransaksi({
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(8)
   doc.setTextColor(15, 23, 42)
-  doc.text(`( ${(anggotaNama || 'Jamaah').slice(0, 22)} )`, leftColCenter, signLineY + 4.5, {
+  const jamaahSignLines = doc.splitTextToSize(`( ${anggotaNama || 'Jamaah'} )`, 46)
+  doc.text(jamaahSignLines, leftColCenter, signLineY + 4.5, {
     align: 'center',
+    lineHeightFactor: 1.25,
   })
-  doc.text(`( Pengurus ${instansiTitle.slice(0, 15)} )`, rightColCenter, signLineY + 4.5, {
+  const pengurusSignLines = doc.splitTextToSize(`( Pengurus ${instansiTitle} )`, 54)
+  doc.text(pengurusSignLines, rightColCenter, signLineY + 4.5, {
     align: 'center',
+    lineHeightFactor: 1.25,
   })
 
   // ── 7. Footer Resmi di Bagian Bawah Halaman ─────────────────────────────────
@@ -306,10 +344,13 @@ export function cetakBuktiTransaksi({
   doc.setFontSize(6.8)
   doc.setTextColor(100, 116, 139)
   doc.text(
-    'Kwitansi ini diterbitkan secara elektronik oleh Sistem Manajemen Tabungan Qurban (SIQURBAN) dan sah sebagai bukti pembayaran.',
+    doc.splitTextToSize(
+      'Kwitansi ini diterbitkan secara elektronik oleh Sistem Manajemen Tabungan Qurban (SIQURBAN) dan sah sebagai bukti pembayaran.',
+      pageWidth - 28,
+    ),
     pageWidth / 2,
-    footerY,
-    { align: 'center' },
+    footerY - 2,
+    { align: 'center', lineHeightFactor: 1.2 },
   )
   doc.setFont('helvetica', 'normal')
   doc.text(

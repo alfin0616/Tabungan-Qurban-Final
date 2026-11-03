@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { CalendarClock, Settings2, MessageCircle } from 'lucide-react'
+import { CalendarClock, Settings2, MessageCircle, Users } from 'lucide-react'
 import Avatar from '../ui/Avatar'
 import Badge from '../ui/Badge'
 import { formatCurrency, calculateSkemaTabungan } from '../../utils/formatCurrency'
@@ -27,6 +27,7 @@ export default function TabunganTable({
             lamaBulan: t.lama_tabungan || t.anggota?.lama_tabungan || 12,
           })
           const canEdit = isAdmin || (currentAnggotaId && t.anggota_id === currentAnggotaId)
+          const kelompok = t.anggota?.kelompok
 
           return (
             <div
@@ -44,9 +45,15 @@ export default function TabunganTable({
                     <p className="font-bold text-ink dark:text-ink-dark truncate text-sm">
                       {t.anggota?.nama || 'Anggota'}
                     </p>
-                    <p className="text-xs font-mono text-ink-muted dark:text-ink-muted-dark">
-                      {t.anggota?.kode_anggota || '-'}
-                    </p>
+                    <div className="flex flex-wrap items-center gap-1.5 text-xs text-ink-muted dark:text-ink-muted-dark">
+                      <span className="font-mono">{t.anggota?.kode_anggota || '-'}</span>
+                      {kelompok?.nama_kelompok && (
+                        <span className="inline-flex items-center gap-1 rounded bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 px-1.5 py-0.2 text-[10px] font-semibold">
+                          <Users className="h-2.5 w-2.5" />
+                          <span>{kelompok.nama_kelompok}</span>
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </Link>
                 <Badge tone={t.anggota?.status !== false ? 'emerald' : 'danger'}>
@@ -76,10 +83,15 @@ export default function TabunganTable({
                   </span>
                 </div>
                 <div className="rounded-xl border border-border/70 dark:border-border-dark/70 bg-bg/40 dark:bg-bg-dark/40 p-2.5">
-                  <span className="text-[11px] text-ink-muted dark:text-ink-muted-dark block">Target Qurban</span>
+                  <span className="text-[11px] text-ink-muted dark:text-ink-muted-dark block">Target Tabungan</span>
                   <span className="font-bold text-sm text-ink dark:text-ink-dark block mt-0.5 truncate">
                     {formatCurrency(t.target)}
                   </span>
+                  {kelompok?.target_dana && (
+                    <span className="text-[10px] text-indigo-600 dark:text-indigo-400 block truncate">
+                      Kelompok: {formatCurrency(kelompok.target_dana)}
+                    </span>
+                  )}
                 </div>
                 <div className="col-span-2 rounded-xl border border-emerald-500/20 bg-emerald-50/40 dark:bg-emerald-950/20 p-2.5 flex items-center justify-between">
                   <span className="text-xs text-ink-muted dark:text-ink-muted-dark">
@@ -179,6 +191,7 @@ export default function TabunganTable({
                 lamaBulan: t.lama_tabungan || t.anggota?.lama_tabungan || 12,
               })
               const canEdit = isAdmin || (currentAnggotaId && t.anggota_id === currentAnggotaId)
+              const kelompok = t.anggota?.kelompok
 
               return (
                 <tr key={t.id} className="hover:bg-bg/50 dark:hover:bg-slate-800/30 transition-colors">
@@ -187,7 +200,17 @@ export default function TabunganTable({
                       <Avatar src={t.anggota?.foto} name={t.anggota?.nama} size={34} />
                       <div>
                         <p className="font-semibold text-ink dark:text-ink-dark">{t.anggota?.nama || 'Anggota'}</p>
-                        <p className="text-xs font-mono text-ink-muted dark:text-ink-muted-dark">{t.anggota?.kode_anggota}</p>
+                        <div className="flex items-center gap-1.5 text-xs text-ink-muted dark:text-ink-muted-dark">
+                          <span className="font-mono">{t.anggota?.kode_anggota}</span>
+                          {kelompok?.nama_kelompok && (
+                            <>
+                              <span>•</span>
+                              <span className="font-medium text-indigo-600 dark:text-indigo-400">
+                                {kelompok.nama_kelompok}
+                              </span>
+                            </>
+                          )}
+                        </div>
                       </div>
                     </Link>
                   </td>
@@ -213,8 +236,13 @@ export default function TabunganTable({
                   <td className="py-3 pr-4 font-bold text-emerald-600 dark:text-emerald-400 whitespace-nowrap">
                     {formatCurrency(t.saldo)}
                   </td>
-                  <td className="py-3 pr-4 text-ink-muted dark:text-ink-muted-dark whitespace-nowrap">
-                    {formatCurrency(t.target)}
+                  <td className="py-3 pr-4 whitespace-nowrap">
+                    <p className="font-bold text-ink dark:text-ink-dark">{formatCurrency(t.target)}</p>
+                    {kelompok?.target_dana && (
+                      <p className="text-[10px] text-indigo-600 dark:text-indigo-400">
+                        Klp: {formatCurrency(kelompok.target_dana)}
+                      </p>
+                    )}
                   </td>
                   <td className="py-3 pr-4">
                     <div className="flex items-center gap-2">

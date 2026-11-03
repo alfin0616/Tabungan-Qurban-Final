@@ -118,6 +118,7 @@ export default function LoginForm() {
 
     try {
       const authData = await login(values)
+      let isSuperAdminUser = false
 
       if (loginType === 'jamaah') {
         await setActiveJamaahGroup(selectedInstansiId, selectedKelompokId)
@@ -133,7 +134,9 @@ export default function LoginForm() {
               .eq('id', userId)
               .maybeSingle()
 
-            if (prof?.role !== 'admin' && prof?.role !== 'superadmin') {
+            if (prof?.role === 'superadmin') {
+              isSuperAdminUser = true
+            } else if (prof?.role !== 'admin') {
               await logout()
               setGroupError(
                 'Akun ini bukan akun Admin Instansi. Masukkan Kode Instansi resmi di bawah untuk mengaktifkan akses Admin, atau daftar melalui halaman Daftar Admin Instansi.',
@@ -145,7 +148,8 @@ export default function LoginForm() {
       }
 
       toast.success('Selamat datang kembali!')
-      navigate(location.state?.from?.pathname || '/dashboard', { replace: true })
+      // Langsung diarahkan ke Dashboard utama setelah login
+      navigate(isSuperAdminUser ? '/superadmin/dashboard' : '/dashboard', { replace: true })
     } catch (err) {
       toast.error(err.message || 'Email/Nomor Telepon, Kode Instansi, atau password salah')
     }
