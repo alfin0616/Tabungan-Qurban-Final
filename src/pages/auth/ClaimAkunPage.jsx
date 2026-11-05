@@ -7,7 +7,7 @@ import { supabase } from '../../api/supabaseClient'
 import { Card, CardHeader, CardTitle } from '../../components/ui/Card'
 import Input from '../../components/ui/Input'
 import Button from '../../components/ui/Button'
-import logoSiqurban from '../../assets/logo-siqurban.png'
+import logoSiqurban from '../../assets/siqurban-logo-v4.png'
 
 export default function ClaimAkunPage() {
   const { logout, setActiveJamaahGroup, setActiveAdminInstansi, user } = useAuth()

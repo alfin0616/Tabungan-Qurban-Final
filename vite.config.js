@@ -17,6 +17,10 @@ export default defineConfig({
         maximumFileSizeToCacheInBytes: 4000000,
       },
       includeAssets: [
+        'siqurban-logo-v4.png',
+        'siqurban-icon-192-v4.png',
+        'siqurban-icon-512-v4.png',
+        'favicon.ico',
         'SQNn.png',
         'logo-siqurban.png',
         'apple-touch-icon.png',
@@ -35,9 +39,9 @@ export default defineConfig({
         scope: '/',
         start_url: '/',
         icons: [
-          { src: '/icon-192.png?v=4', sizes: '192x192', type: 'image/png', purpose: 'any' },
-          { src: '/icon-512.png?v=4', sizes: '512x512', type: 'image/png', purpose: 'any' },
-          { src: '/icon-512-maskable.png?v=4', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+          { src: '/siqurban-icon-192-v4.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+          { src: '/siqurban-icon-512-v4.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+          { src: '/siqurban-icon-512-v4.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       },
       devOptions: {

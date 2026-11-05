@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { getSettings, updateSettings } from '../repositories/settingsRepository'
 import { auditRepository } from '../repositories/auditRepository'
+import defaultLogoUrl from '../assets/siqurban-logo-v4.png'
 
 export function useSettings() {
   const query = useQuery({ queryKey: ['settings'], queryFn: getSettings })
@@ -23,16 +24,19 @@ export function useSettings() {
         document.documentElement.style.setProperty('--secondary-color', settings.secondary_color)
       }
 
-      // Apply Favicon dynamically
-      if (settings.favicon_url) {
-        let link = document.querySelector("link[rel*='icon']")
-        if (!link) {
-          link = document.createElement('link')
-          link.rel = 'icon'
-          document.head.appendChild(link)
-        }
-        link.href = settings.favicon_url
+      // Apply Favicon dynamically (gunakan bundled logo v4 jika masih default path lokal seperti /favicon.ico)
+      const isDefaultFavicon =
+        !settings.favicon_url ||
+        settings.favicon_url.startsWith('/')
+      const resolvedFavicon = isDefaultFavicon ? defaultLogoUrl : settings.favicon_url
+
+      let link = document.querySelector("link[rel*='icon']")
+      if (!link) {
+        link = document.createElement('link')
+        link.rel = 'icon'
+        document.head.appendChild(link)
       }
+      link.href = resolvedFavicon
     }
   }, [query.data])
 

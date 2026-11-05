@@ -46,8 +46,8 @@ export default function SystemSettingsPage() {
   const [settings, setSettings] = useState({
     id: 1,
     app_name: 'SIQURBAN',
-    logo_url: '/logo-siqurban.png',
-    favicon_url: '/favicon.ico',
+    logo_url: '/siqurban-logo-v4.png',
+    favicon_url: '/siqurban-logo-v4.png',
     primary_color: '#059669',
     secondary_color: '#10b981',
     language: 'id',
@@ -339,7 +339,7 @@ export default function SystemSettingsPage() {
                     <input type="file" accept="image/*" onChange={handleLogoUpload} hidden disabled={uploadingLogo} />
                   </label>
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-emerald-500/40 bg-emerald-50 dark:bg-emerald-900/50">
-                    <img src={settings.logo_url} alt="Logo" className="h-6 w-6 object-contain" />
+                    <img src={settings.logo_url?.startsWith('/') ? '/siqurban-logo-v4.png' : settings.logo_url} alt="Logo" className="h-6 w-6 object-contain" />
                   </div>
                 </div>
               </div>
@@ -353,7 +353,7 @@ export default function SystemSettingsPage() {
                     type="text"
                     value={settings.favicon_url}
                     onChange={(e) => handleChange('favicon_url', e.target.value)}
-                    placeholder="/favicon.ico"
+                    placeholder="/siqurban-logo-v4.png"
                     className="block flex-1 rounded-xl border border-emerald-800/30 bg-white dark:bg-emerald-900/30 px-3.5 py-2.5 text-sm font-medium text-ink dark:text-white focus:border-emerald-500 focus:outline-none"
                   />
                   <label className="cursor-pointer inline-flex items-center gap-1.5 rounded-xl border border-emerald-600/60 bg-emerald-50 dark:bg-emerald-900/40 px-3 py-2 text-xs font-bold text-emerald-700 dark:text-emerald-200 hover:bg-emerald-100 dark:hover:bg-emerald-800/50 transition-colors">
@@ -362,7 +362,7 @@ export default function SystemSettingsPage() {
                     <input type="file" accept="image/*,.ico" onChange={handleFaviconUpload} hidden disabled={uploadingFavicon} />
                   </label>
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-emerald-500/40 bg-emerald-50 dark:bg-emerald-900/50 text-xs font-bold text-emerald-600">
-                    <img src={settings.favicon_url} alt="Favicon" className="h-5 w-5 object-contain" onError={(e) => { e.target.style.display='none' }} />
+                    <img src={settings.favicon_url?.startsWith('/') ? '/siqurban-logo-v4.png' : settings.favicon_url} alt="Favicon" className="h-5 w-5 object-contain" onError={(e) => { e.target.style.display='none' }} />
                   </div>
                 </div>
               </div>

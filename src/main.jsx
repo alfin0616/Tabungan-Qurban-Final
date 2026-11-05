@@ -29,8 +29,19 @@ const queryClient = new QueryClient({
 
 const persister = createSyncStoragePersister({
   storage: window.localStorage,
-  key: 'SIQURBAN_OFFLINE_CACHE_V1',
+  key: 'SIQURBAN_OFFLINE_CACHE_V4',
 })
+
+// Otomatis reload halaman satu kali ketika Service Worker baru mengambil alih (agar update deploy langsung tampil)
+if ('serviceWorker' in navigator) {
+  let refreshing = false
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!refreshing) {
+      refreshing = true
+      window.location.reload()
+    }
+  })
+}
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -51,4 +62,3 @@ createRoot(document.getElementById('root')).render(
     </ErrorBoundary>
   </StrictMode>,
 )
-

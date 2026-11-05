@@ -30,7 +30,7 @@ import toast from 'react-hot-toast'
 import { cn } from '../../lib/cn'
 import { useAuth } from '../../context/AuthContext'
 import { useSettings } from '../../hooks/useSettings'
-import logoSQNn from '../../assets/SQNn.png'
+import logoSQNn from '../../assets/siqurban-logo-v4.png'
 
 // Top-level reguler menu (untuk Admin Instansi & Jamaah)
 const topLevelMenu = [
@@ -105,8 +105,7 @@ export default function Sidebar({ open, onClose, collapsed: propCollapsed, onTog
   const { data: settings } = useSettings()
   const isDefaultLogo =
     !settings?.logo_url ||
-    settings.logo_url === '/logo-siqurban.png' ||
-    settings.logo_url === '/SQNn.png'
+    settings.logo_url.startsWith('/')
   const logoUrl = isDefaultLogo ? logoSQNn : settings.logo_url
   const appName = settings?.app_name || 'SIQURBAN'
   const navigate = useNavigate()

@@ -82,8 +82,8 @@ self.addEventListener('push', (event) => {
     const data = event.data.json()
     const options = {
       body: data.body,
-      icon: '/icon-192.png',
-      badge: '/icon-192.png',
+      icon: '/siqurban-icon-192-v4.png',
+      badge: '/siqurban-icon-192-v4.png',
       data: {
         url: data.url || '/',
       },
