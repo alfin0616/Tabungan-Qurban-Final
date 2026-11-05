@@ -5,7 +5,11 @@ import logoSQNn from '../../assets/SQNn.png'
 
 export default function AuthLayout() {
   const { data: settings } = useSettings()
-  const logoUrl = settings?.logo_url || logoSQNn
+  const isDefaultLogo =
+    !settings?.logo_url ||
+    settings.logo_url === '/logo-siqurban.png' ||
+    settings.logo_url === '/SQNn.png'
+  const logoUrl = isDefaultLogo ? logoSQNn : settings.logo_url
   const appName = settings?.app_name || 'SIQURBAN'
 
   return (

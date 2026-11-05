@@ -16,7 +16,14 @@ export default defineConfig({
       injectManifest: {
         maximumFileSizeToCacheInBytes: 4000000,
       },
-      includeAssets: ['SQNn.png', 'SQNn.png'],
+      includeAssets: [
+        'SQNn.png',
+        'logo-siqurban.png',
+        'apple-touch-icon.png',
+        'icon-192.png',
+        'icon-512.png',
+        'icon-512-maskable.png',
+      ],
       manifest: {
         name: 'SIQURBAN - MHM',
         short_name: 'SIQURBAN',
@@ -28,9 +35,9 @@ export default defineConfig({
         scope: '/',
         start_url: '/',
         icons: [
-          { src: '/SQNn.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
-          { src: '/SQNn.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
-          { src: '/SQNn.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+          { src: '/icon-192.png?v=4', sizes: '192x192', type: 'image/png', purpose: 'any' },
+          { src: '/icon-512.png?v=4', sizes: '512x512', type: 'image/png', purpose: 'any' },
+          { src: '/icon-512-maskable.png?v=4', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       },
       devOptions: {
