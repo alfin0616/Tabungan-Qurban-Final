@@ -182,13 +182,12 @@ export default function Sidebar({ open, onClose, collapsed: propCollapsed, onTog
         />
       )}
 
-      {/* Main Sidebar */}
+      {/* Main Sidebar (Desktop Only >= 1024px) */}
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-40 flex h-screen max-h-screen flex-col border-r border-emerald-800 bg-emerald-800 dark:bg-emerald-950 transition-all duration-300',
+          'fixed inset-y-0 left-0 z-40 hidden lg:flex h-screen max-h-screen flex-col border-r border-emerald-800 bg-emerald-800 dark:bg-emerald-950 transition-all duration-300',
           collapsed ? 'lg:w-20' : 'lg:w-64',
           'w-64',
-          open ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
         )}
       >
         {/* Header Logo */}
@@ -412,8 +411,7 @@ export default function Sidebar({ open, onClose, collapsed: propCollapsed, onTog
         <div
           ref={sideDrawerRef}
           className={cn(
-            'fixed inset-y-0 z-50 flex h-screen max-h-screen flex-col border-r border-emerald-700/80 bg-emerald-900/95 dark:bg-emerald-950/95 text-white shadow-2xl backdrop-blur-md transition-all duration-300 animate-in slide-in-from-left-4',
-            'left-0 w-full sm:w-[380px]',
+            'fixed inset-y-0 z-50 hidden lg:flex h-screen max-h-screen flex-col border-r border-emerald-700/80 bg-emerald-900/95 dark:bg-emerald-950/95 text-white shadow-2xl backdrop-blur-md transition-all duration-300 animate-in slide-in-from-left-4',
             collapsed
               ? 'lg:left-20 lg:w-[420px] sm:lg:w-[500px]'
               : 'lg:left-64 lg:w-[460px] sm:lg:w-[540px]',

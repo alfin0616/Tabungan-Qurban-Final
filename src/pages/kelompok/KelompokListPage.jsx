@@ -177,8 +177,136 @@ export default function KelompokListPage() {
           </div>
         </div>
 
-        {/* Clean Fintech / Argon Table */}
-        <div className="overflow-x-auto">
+        {/* TAMPILAN MOBILE (< 768px): Card View Responsif Minimalis */}
+        <div className="block md:hidden p-3.5 space-y-3">
+          {isLoading ? (
+            <div className="p-8 text-center text-ink-muted dark:text-ink-muted-dark">
+              <div className="w-5 h-5 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+              Memuat data...
+            </div>
+          ) : data?.data?.length === 0 ? (
+            <EmptyState
+              icon={Users}
+              title="Belum ada data Kelompok"
+              description="Buat grup patungan sapi atau qurban kambing pertama Anda."
+              actionLabel="Tambah Kelompok"
+              onAction={() => handleOpenForm()}
+            />
+          ) : (
+            data?.data?.map((kelompok) => {
+              const members = Array.isArray(kelompok.anggota) ? kelompok.anggota : []
+              const totalTerkumpul = members.reduce((sum, m) => sum + getAnggotaSaldo(m), 0)
+              const targetDana = Number(kelompok.target_dana || 0)
+              const pct = targetDana > 0 ? Math.min(100, Math.round((totalTerkumpul / targetDana) * 100)) : 0
+
+              return (
+                <div
+                  key={kelompok.id}
+                  className="rounded-2xl border border-border dark:border-border-dark bg-white dark:bg-bg-dark p-3.5 space-y-2.5 shadow-2xs"
+                >
+                  {/* Row 1: Nama, Jenis & Status */}
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="font-bold text-ink dark:text-white text-sm">
+                          {kelompok.nama_kelompok}
+                        </span>
+                        <span
+                          className={`text-[10px] uppercase font-bold px-1.5 py-0.5 rounded-md ${
+                            kelompok.jenis_qurban === 'sapi'
+                              ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400'
+                              : 'bg-indigo-500/15 text-indigo-600 dark:text-indigo-400'
+                          }`}
+                        >
+                          {kelompok.jenis_qurban}
+                        </span>
+                      </div>
+                      <p className="text-xs font-mono text-ink-muted dark:text-ink-muted-dark mt-0.5">
+                        {kelompok.kode_kelompok} • Tahun {kelompok.tahun}
+                      </p>
+                    </div>
+
+                    <button
+                      onClick={() =>
+                        updateKelompok.mutate({ id: kelompok.id, status: !kelompok.status })
+                      }
+                      disabled={updateKelompok.isPending}
+                      className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+                        kelompok.status
+                          ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
+                          : 'bg-rose-500/15 text-rose-600 dark:text-rose-400'
+                      }`}
+                    >
+                      {kelompok.status ? 'Aktif' : 'Nonaktif'}
+                    </button>
+                  </div>
+
+                  {/* Instansi info if any */}
+                  {kelompok.instansi?.nama_instansi && (
+                    <div className="text-xs font-medium text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
+                      <Building2 className="h-3.5 w-3.5 shrink-0" />
+                      <span className="truncate">{kelompok.instansi.nama_instansi}</span>
+                    </div>
+                  )}
+
+                  {/* Saldo & Progress Bar */}
+                  <div className="rounded-xl border border-border/70 dark:border-border-dark/70 bg-bg/40 dark:bg-bg-dark/40 p-2.5 space-y-1.5 text-xs">
+                    <div className="flex items-center justify-between">
+                      <span className="text-ink-muted dark:text-ink-muted-dark">Progres Dana</span>
+                      <span className="font-bold text-emerald-600 dark:text-emerald-400">{pct}%</span>
+                    </div>
+                    <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
+                      <div className="h-full rounded-full bg-emerald-500" style={{ width: `${pct}%` }} />
+                    </div>
+                    <div className="flex items-center justify-between text-[11px] pt-0.5">
+                      <span className="font-extrabold text-emerald-600 dark:text-emerald-400">
+                        {formatCurrency(totalTerkumpul)}
+                      </span>
+                      <span className="text-ink-muted dark:text-ink-muted-dark">
+                        Target: {formatCurrency(targetDana)}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex items-center justify-between pt-1 border-t border-border/60 dark:border-border-dark/60 text-xs">
+                    <button
+                      type="button"
+                      onClick={() => setViewingKelompok(kelompok)}
+                      className="inline-flex items-center gap-1 rounded-lg bg-indigo-500/10 px-2.5 py-1 font-bold text-indigo-600 dark:text-indigo-300"
+                    >
+                      <Users className="w-3.5 h-3.5" />
+                      <span>{members.length}/{kelompok.maksimal_anggota} Anggota</span>
+                    </button>
+
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => handleOpenForm(kelompok)}
+                        className="p-1.5 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg"
+                        title="Edit"
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => {
+                          setDeletingId(kelompok.id)
+                          setIsDeleteModalOpen(true)
+                        }}
+                        className="p-1.5 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-lg"
+                        title="Hapus"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )
+            })
+          )}
+        </div>
+
+        {/* Clean Fintech / Argon Table (Desktop >= 768px) */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-bg/80 dark:bg-slate-800/50 text-xs font-bold uppercase tracking-wider text-ink-muted dark:text-ink-muted-dark border-b border-border/80 dark:border-border-dark">

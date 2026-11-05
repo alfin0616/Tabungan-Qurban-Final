@@ -110,8 +110,115 @@ export default function InstansiListPage() {
           </div>
         </div>
 
-        {/* Clean Fintech / Argon Table */}
-        <div className="overflow-x-auto">
+        {/* TAMPILAN MOBILE (< 768px): Card View Responsif Minimalis */}
+        <div className="block md:hidden p-3.5 space-y-3">
+          {isLoading ? (
+            <div className="p-8 text-center text-ink-muted dark:text-ink-muted-dark">
+              <div className="w-5 h-5 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+              Memuat data...
+            </div>
+          ) : data?.data?.length === 0 ? (
+            <EmptyState
+              icon={Building2}
+              title="Belum ada data Instansi"
+              description="Tambahkan instansi atau masjid pertama Anda sekarang."
+              actionLabel="Tambah Instansi"
+              onAction={() => handleOpenForm()}
+            />
+          ) : (
+            data?.data?.map((instansi) => (
+              <div
+                key={instansi.id}
+                className="rounded-2xl border border-border dark:border-border-dark bg-white dark:bg-bg-dark p-3.5 space-y-2.5 shadow-2xs"
+              >
+                {/* Header: Nama & Status */}
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <h3 className="font-bold text-ink dark:text-white text-sm">
+                      {instansi.nama_instansi}
+                    </h3>
+                    <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs">
+                      <span className="text-indigo-700 dark:text-indigo-300 bg-indigo-500/15 px-2 py-0.5 rounded-md font-mono font-semibold">
+                        Kode: {instansi.kode_instansi}
+                      </span>
+                      {instansi.kode_registrasi && (
+                        <span className="text-emerald-700 dark:text-emerald-400 bg-emerald-500/15 px-2 py-0.5 rounded-md font-mono font-semibold">
+                          Reg: {instansi.kode_registrasi}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => updateInstansi.mutate({ id: instansi.id, status: !instansi.status })}
+                    disabled={updateInstansi.isPending}
+                    className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+                      instansi.status
+                        ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
+                        : 'bg-rose-500/15 text-rose-600 dark:text-rose-400'
+                    }`}
+                  >
+                    {instansi.status ? 'Aktif' : 'Nonaktif'}
+                  </button>
+                </div>
+
+                {/* Rekening & Kontak */}
+                <div className="rounded-xl border border-border/70 dark:border-border-dark/70 bg-bg/40 dark:bg-bg-dark/40 p-2.5 text-xs space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-ink-muted dark:text-ink-muted-dark">Rekening:</span>
+                    <span className="font-bold text-emerald-700 dark:text-emerald-300 font-mono">
+                      {instansi.nama_bank ? `${instansi.nama_bank} • ` : ''}
+                      {instansi.nomor_rekening || instansi.rekening || 'Belum diatur'}
+                    </span>
+                  </div>
+                  {instansi.atas_nama_rekening && (
+                    <div className="text-[11px] text-ink-muted dark:text-ink-muted-dark text-right">
+                      a.n. {instansi.atas_nama_rekening}
+                    </div>
+                  )}
+                  <div className="flex items-center justify-between pt-1 border-t border-border/50">
+                    <span className="text-ink-muted dark:text-ink-muted-dark">Tahun Qurban:</span>
+                    <span className="font-semibold text-ink dark:text-white">{instansi.tahun_qurban_aktif}</span>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="flex items-center justify-between pt-1 border-t border-border/60 dark:border-border-dark/60 text-xs">
+                  <button
+                    onClick={() => setMonitoringInstansi(instansi)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-600 hover:text-white transition-all"
+                  >
+                    <Eye className="w-3.5 h-3.5" />
+                    <span>Monitor Data</span>
+                  </button>
+
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => handleOpenForm(instansi)}
+                      className="p-1.5 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg"
+                      title="Edit"
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => {
+                        setDeletingId(instansi.id)
+                        setIsDeleteModalOpen(true)
+                      }}
+                      className="p-1.5 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-lg"
+                      title="Hapus"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Clean Fintech / Argon Table (Desktop >= 768px) */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-bg/80 dark:bg-slate-800/50 text-xs font-bold uppercase tracking-wider text-ink-muted dark:text-ink-muted-dark border-b border-border/80 dark:border-border-dark">

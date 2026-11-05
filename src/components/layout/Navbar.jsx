@@ -47,17 +47,7 @@ export default function Navbar({ onMenuClick, onToggleCollapsed, collapsed, titl
   return (
     <header className="sticky top-0 z-20 flex h-16 items-center justify-between gap-4 border-b border-border dark:border-border-dark bg-surface/90 dark:bg-surface-dark/90 px-4 backdrop-blur lg:px-6">
       <div className="flex items-center gap-3">
-        {/* Mobile Hamburger */}
-        <button
-          onClick={onMenuClick}
-          title="Buka Menu"
-          aria-label="Buka Menu"
-          className="rounded-xl p-2 text-ink-muted dark:text-ink-muted-dark hover:bg-emerald-50 hover:text-emerald-800 dark:hover:bg-slate-700 lg:hidden transition-colors"
-        >
-          <Menu className="h-5 w-5" />
-        </button>
-
-        {/* Desktop Hamburger (Perbesar / Perkecil Sidebar) */}
+        {/* Desktop Sidebar Toggle (Perbesar / Perkecil Sidebar) */}
         {onToggleCollapsed && (
           <button
             onClick={onToggleCollapsed}
@@ -69,7 +59,7 @@ export default function Navbar({ onMenuClick, onToggleCollapsed, collapsed, titl
           </button>
         )}
 
-        <h1 className="hidden text-lg font-semibold text-ink dark:text-ink-dark sm:block">{title}</h1>
+        <h1 className="text-base sm:text-lg font-bold text-ink dark:text-ink-dark truncate">{title}</h1>
       </div>
 
       <div className="hidden flex-1 max-w-sm md:block">

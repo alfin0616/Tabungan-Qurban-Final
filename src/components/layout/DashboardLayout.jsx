@@ -116,22 +116,14 @@ export default function DashboardLayout() {
         </div>
 
         <main
-          className={cn(
-            'relative z-10 -mt-14 flex-1 min-w-0 w-full px-4 lg:px-6',
-            isJamaah ? 'mobile-bottom-nav-pad pb-36 lg:pb-8' : 'pb-8 lg:pb-8',
-          )}
-          style={
-            isJamaah
-              ? {
-                  paddingBottom:
-                    'calc(5.5rem + env(safe-area-inset-bottom, 16px) + 1.5rem)',
-                }
-              : undefined
-          }
+          className="relative z-10 -mt-14 flex-1 min-w-0 w-full px-3.5 sm:px-4 lg:px-6 mobile-bottom-nav-pad pb-32 lg:pb-8"
+          style={{
+            paddingBottom: 'calc(5.5rem + env(safe-area-inset-bottom, 16px) + 1.5rem)',
+          }}
         >
           <Outlet />
         </main>
-        {isJamaah && <BottomNav />}
+        <BottomNav />
       </div>
     </div>
   )

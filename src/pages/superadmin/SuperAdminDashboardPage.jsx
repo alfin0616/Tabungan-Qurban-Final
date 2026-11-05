@@ -14,6 +14,10 @@ import {
   Calendar,
   CalendarDays,
   ArrowUpRight,
+  Activity,
+  Bug,
+  ShieldCheck,
+  ChevronRight,
 } from 'lucide-react'
 import {
   ResponsiveContainer,
@@ -39,6 +43,8 @@ import {
   useJamaahTeraktif,
 } from '../../hooks/useSuperAdminDashboard'
 import { useTheme } from '../../context/ThemeContext'
+import { useAuth } from '../../context/AuthContext'
+import Avatar from '../../components/ui/Avatar'
 import StatCard from '../../components/cards/StatCard'
 import { Card, CardHeader, CardTitle } from '../../components/ui/Card'
 import Badge from '../../components/ui/Badge'
@@ -47,7 +53,6 @@ import EmptyState from '../../components/ui/EmptyState'
 import { formatCurrency, formatChartAxisCurrency } from '../../utils/formatCurrency'
 import { formatDate } from '../../utils/formatDate'
 import AiInsightCard from '../../components/dashboard/AiInsightCard'
-import WaPaymentReminderCard from '../../components/dashboard/WaPaymentReminderCard'
 
 // ─── Tooltip kustom untuk recharts ───────────────────────────────────────────
 const CustomTooltipCurrency = memo(function CustomTooltipCurrency({ active, payload, label }) {
@@ -186,6 +191,8 @@ const TransaksiRow = memo(function TransaksiRow({ item }) {
 // ─── Halaman utama ─────────────────────────────────────────────────────────────
 export default function SuperAdminDashboardPage() {
   const { isDark } = useTheme()
+  const { user, profile } = useAuth()
+  const displayName = profile?.nama || user?.user_metadata?.nama || 'Super Admin'
   const chartColors = {
     grid: isDark ? '#334155' : '#e2e8f0',
     tick: isDark ? '#94a3b8' : '#64748b',
@@ -207,9 +214,28 @@ export default function SuperAdminDashboardPage() {
   const growthTahunan = Number(statistik?.growth_tahunan ?? 0)
 
   return (
-    <div className="space-y-6">
-      {/* ── Header inside Argon Card ── */}
-      <div className="rounded-2xl border border-border/80 dark:border-border-dark bg-surface dark:bg-surface-dark p-5 shadow-argon flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="space-y-5 sm:space-y-6">
+      {/* ── 1. GREETING HEADER MOBILE (< 768px): Minimalis Sesuai Contoh App ── */}
+      <div className="flex md:hidden items-center justify-between pt-1">
+        <div className="min-w-0 pr-3">
+          <h1 className="text-xl font-extrabold text-ink dark:text-white tracking-tight truncate">
+            Halo, {displayName}
+          </h1>
+          <p className="text-xs text-ink-muted dark:text-ink-muted-dark font-medium truncate mt-0.5">
+            Super Admin • Monitoring Nasional
+          </p>
+        </div>
+        <Link
+          to="/profile"
+          title="Buka Profil"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-950/60 ring-2 ring-emerald-500/20 shadow-xs active:scale-95 transition-transform"
+        >
+          <Avatar src={profile?.foto} name={displayName} size={38} />
+        </Link>
+      </div>
+
+      {/* ── Header inside Argon Card (Desktop) ── */}
+      <div className="hidden md:flex rounded-2xl border border-border/80 dark:border-border-dark bg-surface dark:bg-surface-dark p-5 shadow-argon flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-tl from-emerald-800 to-emerald-600 text-white shadow-md shadow-emerald-900/20">
             <Building2 className="h-5 w-5" />
@@ -241,56 +267,116 @@ export default function SuperAdminDashboardPage() {
         </div>
       </div>
 
-      {/* ── Stat Cards (6) — Grid 3 Kolom Agar Nominal Terlihat Penuh & Dapat Diklik ke Menu Terkait ── */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <StatCard
-          icon={Building2}
-          tone="emerald"
-          label="Total Instansi"
-          value={loadingStats ? '—' : statistik?.total_instansi ?? 0}
-          hint="Klik untuk kelola data Instansi"
-          to="/superadmin/instansi"
-        />
-        <StatCard
-          icon={Layers}
-          tone="emerald"
-          label="Total Kelompok"
-          value={loadingStats ? '—' : statistik?.total_kelompok ?? 0}
-          hint="Klik untuk kelola Kelompok Qurban"
-          to="/kelompok"
-        />
-        <StatCard
-          icon={Users}
-          tone="emerald"
-          label="Total Jamaah"
-          value={loadingStats ? '—' : statistik?.total_jamaah ?? 0}
-          hint="Klik untuk lihat daftar Anggota"
-          to="/anggota"
-        />
-        <StatCard
-          icon={Wallet}
-          tone="warning"
-          label="Total Saldo Nasional"
-          value={loadingStats ? '—' : formatCurrency(totalSaldo)}
-          hint="Klik nominal untuk menu Tabungan"
-          to="/tabungan"
-        />
-        <StatCard
-          icon={Target}
-          tone="emerald"
-          label="Total Target Qurban"
-          value={loadingStats ? '—' : formatCurrency(totalTarget)}
-          hint="Klik nominal untuk menu Kelompok & Target"
-          to="/kelompok"
-        />
-        <StatCard
-          icon={Receipt}
-          tone="danger"
-          label="Transaksi Bulan Ini"
-          value={loadingStats ? '—' : statistik?.total_transaksi ?? 0}
-          hint="Klik untuk lihat Riwayat Transaksi"
-          to="/transaksi/riwayat"
-        />
+      {/* ── Stat Cards (6) — Grid 2 Kolom di Mobile, 3 Kolom di Desktop ── */}
+      <div>
+        <div className="mb-2 sm:mb-3 flex items-center justify-between">
+          <h2 className="text-base sm:text-lg font-bold text-ink dark:text-white">Ringkasan</h2>
+          <span className="text-xs text-ink-muted dark:text-ink-muted-dark hidden sm:inline">
+            Statistik nasional seluruh instansi
+          </span>
+        </div>
+        <div className="grid grid-cols-2 gap-2.5 sm:gap-4 lg:grid-cols-3">
+          <StatCard
+            icon={Building2}
+            tone="emerald"
+            label="Total Instansi"
+            value={loadingStats ? '—' : statistik?.total_instansi ?? 0}
+            hint="Klik untuk kelola data Instansi"
+            to="/superadmin/instansi"
+          />
+          <StatCard
+            icon={Layers}
+            tone="emerald"
+            label="Total Kelompok"
+            value={loadingStats ? '—' : statistik?.total_kelompok ?? 0}
+            hint="Klik untuk kelola Kelompok Qurban"
+            to="/kelompok"
+          />
+          <StatCard
+            icon={Users}
+            tone="emerald"
+            label="Total Jamaah"
+            value={loadingStats ? '—' : statistik?.total_jamaah ?? 0}
+            hint="Klik untuk lihat daftar Anggota"
+            to="/anggota"
+          />
+          <StatCard
+            icon={Wallet}
+            tone="warning"
+            label="Total Saldo Nasional"
+            value={loadingStats ? '—' : formatCurrency(totalSaldo)}
+            hint="Klik nominal untuk menu Tabungan"
+            to="/tabungan"
+          />
+          <StatCard
+            icon={Target}
+            tone="emerald"
+            label="Total Target Qurban"
+            value={loadingStats ? '—' : formatCurrency(totalTarget)}
+            hint="Klik nominal untuk menu Kelompok & Target"
+            to="/kelompok"
+          />
+          <StatCard
+            icon={Receipt}
+            tone="danger"
+            label="Transaksi Bulan Ini"
+            value={loadingStats ? '—' : statistik?.total_transaksi ?? 0}
+            hint="Klik untuk lihat Riwayat Transaksi"
+            to="/transaksi/riwayat"
+          />
+        </div>
+      </div>
+
+      {/* ── SECTION MENU CEPAT SUPER ADMIN ── */}
+      <div>
+        <h2 className="mb-2 sm:mb-3 text-base sm:text-lg font-bold text-ink dark:text-white">
+          Menu Cepat
+        </h2>
+        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4 sm:gap-3">
+          <Link
+            to="/superadmin/monitoring"
+            className="group flex flex-col items-center justify-center rounded-2xl border border-border/80 dark:border-border-dark bg-surface dark:bg-surface-dark p-3.5 text-center shadow-2xs hover:border-emerald-500 hover:shadow-sm transition-all"
+          >
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform">
+              <Activity className="h-5 w-5" />
+            </div>
+            <span className="mt-2 text-xs font-bold text-ink dark:text-white">Monitoring</span>
+            <span className="text-[10px] text-ink-muted dark:text-ink-muted-dark">Lintas instansi</span>
+          </Link>
+
+          <Link
+            to="/instansi"
+            className="group flex flex-col items-center justify-center rounded-2xl border border-border/80 dark:border-border-dark bg-surface dark:bg-surface-dark p-3.5 text-center shadow-2xs hover:border-emerald-500 hover:shadow-sm transition-all"
+          >
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform">
+              <Building2 className="h-5 w-5" />
+            </div>
+            <span className="mt-2 text-xs font-bold text-ink dark:text-white">Instansi</span>
+            <span className="text-[10px] text-ink-muted dark:text-ink-muted-dark">Data mitra</span>
+          </Link>
+
+          <Link
+            to="/superadmin/logs"
+            className="group flex flex-col items-center justify-center rounded-2xl border border-border/80 dark:border-border-dark bg-surface dark:bg-surface-dark p-3.5 text-center shadow-2xs hover:border-emerald-500 hover:shadow-sm transition-all"
+          >
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-500/15 text-rose-600 dark:text-rose-400 group-hover:scale-110 transition-transform">
+              <Bug className="h-5 w-5" />
+            </div>
+            <span className="mt-2 text-xs font-bold text-ink dark:text-white">System Logs</span>
+            <span className="text-[10px] text-ink-muted dark:text-ink-muted-dark">Pantau error</span>
+          </Link>
+
+          <Link
+            to="/superadmin/pengaturan"
+            className="group flex flex-col items-center justify-center rounded-2xl border border-border/80 dark:border-border-dark bg-surface dark:bg-surface-dark p-3.5 text-center shadow-2xs hover:border-emerald-500 hover:shadow-sm transition-all"
+          >
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 group-hover:scale-110 transition-transform">
+              <ShieldCheck className="h-5 w-5" />
+            </div>
+            <span className="mt-2 text-xs font-bold text-ink dark:text-white">Pengaturan</span>
+            <span className="text-[10px] text-ink-muted dark:text-ink-muted-dark">Konfigurasi</span>
+          </Link>
+        </div>
       </div>
 
       {/* ── AI Smart Insight Widget ── */}
@@ -299,11 +385,8 @@ export default function SuperAdminDashboardPage() {
       {/* ── Progress Nasional ── */}
       <ProgressNasional saldo={totalSaldo} target={totalTarget} />
 
-      {/* ── Pusat Pengingat Pembayaran Langsung ke WhatsApp ── */}
-      <WaPaymentReminderCard />
-
-      {/* ── Grafik Setoran Harian & Grafik Setoran Bulanan ── */}
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+      {/* ── Grafik Setoran Harian & Grafik Setoran Bulanan (DISEMBUNYIKAN DI MOBILE SESUAI ARAHAN USER) ── */}
+      <div className="hidden lg:grid grid-cols-1 gap-6 xl:grid-cols-2">
         {/* Grafik Setoran Harian (30 Hari Terakhir) */}
         <Card>
           <CardHeader>
@@ -423,8 +506,8 @@ export default function SuperAdminDashboardPage() {
         </Card>
       </div>
 
-      {/* ── Grafik Setoran Tahunan & Progress Per Instansi ── */}
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+      {/* ── Grafik Setoran Tahunan & Progress Per Instansi (DISEMBUNYIKAN DI MOBILE SESUAI ARAHAN USER) ── */}
+      <div className="hidden lg:grid grid-cols-1 gap-6 xl:grid-cols-2">
         {/* Grafik Setoran Tahunan */}
         <Card>
           <CardHeader>
@@ -530,13 +613,24 @@ export default function SuperAdminDashboardPage() {
       {/* ── 10 Transaksi Terbaru ── */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Receipt className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-            10 Transaksi Terbaru
-          </CardTitle>
-          <span className="text-xs text-ink-muted dark:text-ink-muted-dark">
-            Lintas semua instansi
-          </span>
+          <div className="flex items-center justify-between w-full">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Receipt className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                10 Transaksi Terbaru
+              </CardTitle>
+              <span className="text-xs text-ink-muted dark:text-ink-muted-dark">
+                Lintas semua instansi
+              </span>
+            </div>
+            <Link
+              to="/transaksi/riwayat"
+              className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline"
+            >
+              <span>Riwayat</span>
+              <ChevronRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
         </CardHeader>
         {loadingTransaksi ? (
           <div className="flex h-32 items-center justify-center">
@@ -548,30 +642,86 @@ export default function SuperAdminDashboardPage() {
             description="Transaksi akan tampil setelah ada setoran atau penarikan."
           />
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <thead>
-                <tr className="border-b border-border dark:border-border-dark">
-                  <th className="pb-2 text-xs font-semibold text-ink-muted dark:text-ink-muted-dark">
-                    Anggota / Instansi
-                  </th>
-                  <th className="hidden sm:table-cell pb-2 text-xs font-semibold text-ink-muted dark:text-ink-muted-dark">
-                    Kelompok
-                  </th>
-                  <th className="hidden md:table-cell pb-2 text-xs font-semibold text-ink-muted dark:text-ink-muted-dark">
-                    Tanggal
-                  </th>
-                  <th className="pb-2 text-right text-xs font-semibold text-ink-muted dark:text-ink-muted-dark">
-                    Nominal
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {transaksiTerbaru.map((item) => (
-                  <TransaksiRow key={item.id} item={item} />
-                ))}
-              </tbody>
-            </table>
+          <div>
+            {/* Tampilan Mobile (< 768px): Card View Bersih */}
+            <div className="block md:hidden space-y-2.5">
+              {transaksiTerbaru.map((item) => {
+                const isSetoran = item.jenis === 'setoran'
+                return (
+                  <Link
+                    key={item.id}
+                    to="/transaksi/riwayat"
+                    className="flex items-center justify-between rounded-2xl border border-border/80 dark:border-border-dark bg-surface dark:bg-surface-dark p-3 shadow-2xs hover:border-emerald-500/50 transition-all"
+                  >
+                    <div className="flex items-center gap-3 min-w-0 pr-2">
+                      <div
+                        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${
+                          isSetoran
+                            ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
+                            : 'bg-rose-500/15 text-rose-600 dark:text-rose-400'
+                        }`}
+                      >
+                        {isSetoran ? (
+                          <ArrowDownCircle className="h-4 w-4" />
+                        ) : (
+                          <ArrowUpCircle className="h-4 w-4" />
+                        )}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs font-bold text-ink dark:text-white truncate">
+                          {item.nama_anggota}
+                        </p>
+                        <p className="text-[11px] text-ink-muted dark:text-ink-muted-dark truncate">
+                          {item.nama_instansi} • {item.nama_kelompok || 'Reguler'}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="text-right shrink-0">
+                      <p
+                        className={`text-xs font-extrabold ${
+                          isSetoran
+                            ? 'text-emerald-600 dark:text-emerald-400'
+                            : 'text-rose-600 dark:text-rose-400'
+                        }`}
+                      >
+                        {isSetoran ? '+' : '−'}{formatCurrency(item.nominal)}
+                      </p>
+                      <p className="text-[10px] text-ink-muted dark:text-ink-muted-dark mt-0.5">
+                        {formatDate(item.tanggal)}
+                      </p>
+                    </div>
+                  </Link>
+                )
+              })}
+            </div>
+
+            {/* Tampilan Desktop (>= 768px): Table View */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="border-b border-border dark:border-border-dark">
+                    <th className="pb-2 text-xs font-semibold text-ink-muted dark:text-ink-muted-dark">
+                      Anggota / Instansi
+                    </th>
+                    <th className="hidden sm:table-cell pb-2 text-xs font-semibold text-ink-muted dark:text-ink-muted-dark">
+                      Kelompok
+                    </th>
+                    <th className="hidden md:table-cell pb-2 text-xs font-semibold text-ink-muted dark:text-ink-muted-dark">
+                      Tanggal
+                    </th>
+                    <th className="pb-2 text-right text-xs font-semibold text-ink-muted dark:text-ink-muted-dark">
+                      Nominal
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {transaksiTerbaru.map((item) => (
+                    <TransaksiRow key={item.id} item={item} />
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </Card>
