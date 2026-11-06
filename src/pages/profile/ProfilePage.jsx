@@ -32,6 +32,9 @@ import {
   KelompokIcon,
   AnggotaIcon,
   TabunganIcon,
+  SetoranIcon,
+  PenarikanIcon,
+  KeuanganIcon,
 } from '../../components/ui/AppIcons'
 
 export default function ProfilePage() {
@@ -76,8 +79,8 @@ export default function ProfilePage() {
   // 2. Keuangan & Transaksi
   const keuanganMenus = isAdmin
     ? [
-        { to: '/transaksi/setoran', label: 'Input Setoran Kas', icon: ArrowDownCircle, color: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' },
-        { to: '/transaksi/penarikan', label: 'Penarikan Dana', icon: ArrowUpCircle, color: 'bg-rose-500/15 text-rose-600 dark:text-rose-400' },
+        { to: '/transaksi/setoran', label: 'Input Setoran Kas', icon: SetoranIcon, color: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' },
+        { to: '/transaksi/penarikan', label: 'Penarikan Dana', icon: PenarikanIcon, color: 'bg-rose-500/15 text-rose-600 dark:text-rose-400' },
         { to: '/transaksi/riwayat', label: 'Riwayat Transaksi', icon: History, color: 'bg-indigo-500/15 text-indigo-600 dark:text-indigo-400' },
         { to: '/pengeluaran', label: 'Pengeluaran Operasional', icon: Wallet, color: 'bg-pink-500/15 text-pink-600 dark:text-pink-400' },
         { to: '/laporan', label: 'Report Center / Unduh Rekap', icon: FileBarChart, color: 'bg-sky-500/15 text-sky-600 dark:text-sky-400' },
@@ -233,8 +236,9 @@ export default function ProfilePage() {
 
       {/* ── CARD 4: KEUANGAN & TRANSAKSI (DARI HAMBURGER) ── */}
       <div className="space-y-1.5">
-        <h3 className="px-2 text-xs font-bold uppercase tracking-wider text-ink-muted dark:text-ink-muted-dark">
-          Keuangan & Transaksi
+        <h3 className="px-2 text-xs font-bold uppercase tracking-wider text-ink-muted dark:text-ink-muted-dark flex items-center gap-1.5">
+          <KeuanganIcon className="h-4 w-4" />
+          <span>Keuangan & Transaksi</span>
         </h3>
         <div className="rounded-2xl border border-border/80 dark:border-border-dark bg-surface dark:bg-surface-dark p-1.5 shadow-2xs divide-y divide-border/60 dark:divide-border-dark/60">
           {keuanganMenus.map((menu) => (

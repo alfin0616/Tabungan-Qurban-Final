@@ -10,6 +10,7 @@ import { Card, CardHeader, CardTitle } from '../../components/ui/Card'
 import Button from '../../components/ui/Button'
 import SetoranForm from '../../components/forms/SetoranForm'
 import { cetakBuktiTransaksi } from '../../utils/exportBuktiTransaksi'
+import { SetoranIcon } from '../../components/ui/AppIcons'
 
 export default function SetoranPage() {
   const location = useLocation()
@@ -52,7 +53,10 @@ export default function SetoranPage() {
     <div className="mx-auto max-w-lg space-y-4">
       <Card>
         <CardHeader>
-          <CardTitle>Setoran Tabungan Qurban</CardTitle>
+          <CardTitle className="flex items-center gap-2.5">
+            <SetoranIcon className="h-6 w-6" />
+            <span>Setoran Tabungan Qurban</span>
+          </CardTitle>
         </CardHeader>
         <SetoranForm
           key={defaultAnggotaId ?? 'no-default'}

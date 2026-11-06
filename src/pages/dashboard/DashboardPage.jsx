@@ -38,6 +38,9 @@ import {
   AnggotaIcon,
   KelompokIcon,
   TabunganIcon,
+  SetoranIcon,
+  PenarikanIcon,
+  KeuanganIcon,
 } from '../../components/ui/AppIcons'
 import { Card, CardHeader, CardTitle } from '../../components/ui/Card'
 import { SkeletonCard, SkeletonChart } from '../../components/ui/Skeleton'
@@ -137,7 +140,7 @@ export default function DashboardPage() {
               to="/tabungan"
             />
             <StatCard
-              icon={TrendingUp}
+              icon={SetoranIcon}
               tone="emerald"
               label="Setoran Bulan Ini"
               value={formatCurrency(summary?.setoranBulanIni)}
@@ -185,7 +188,7 @@ export default function DashboardPage() {
                 className="group flex flex-col items-center justify-center rounded-2xl border border-border/80 dark:border-border-dark bg-surface dark:bg-surface-dark p-3.5 text-center shadow-2xs hover:border-emerald-500 hover:shadow-sm transition-all"
               >
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform">
-                  <ArrowDownCircle className="h-5 w-5" />
+                  <SetoranIcon className="h-5 w-5" />
                 </div>
                 <span className="mt-2 text-xs font-bold text-ink dark:text-white">Setoran</span>
                 <span className="text-[10px] text-ink-muted dark:text-ink-muted-dark">Catat kas</span>

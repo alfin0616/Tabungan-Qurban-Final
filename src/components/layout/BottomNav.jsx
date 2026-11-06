@@ -9,7 +9,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { cn } from '../../lib/cn'
-import { InstansiIcon, TabunganIcon } from '../ui/AppIcons'
+import { InstansiIcon, TabunganIcon, SetoranIcon } from '../ui/AppIcons'
 
 export default function BottomNav() {
   const { isAdmin, isSuperAdmin } = useAuth()
@@ -25,7 +25,7 @@ export default function BottomNav() {
     : isAdmin
     ? [
         { to: '/dashboard', label: 'Home', icon: LayoutDashboard, activeColor: 'text-emerald-600 dark:text-emerald-400' },
-        { to: '/transaksi/setoran', label: 'Setoran', icon: ArrowDownCircle, activeColor: 'text-emerald-600 dark:text-emerald-400' },
+        { to: '/transaksi/setoran', label: 'Setoran', icon: SetoranIcon, activeColor: 'text-emerald-600 dark:text-emerald-400' },
         { to: '/tabungan', label: 'Tabungan', icon: TabunganIcon, activeColor: 'text-amber-600 dark:text-amber-400' },
         { to: '/transaksi/riwayat', label: 'Riwayat', icon: History, activeColor: 'text-indigo-600 dark:text-indigo-400' },
         { to: '/profile', label: 'Akun', icon: User, activeColor: 'text-blue-600 dark:text-blue-400' },

@@ -2,7 +2,15 @@ import { memo } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowUpRight } from 'lucide-react'
 import { cn } from '../../lib/cn'
-import { InstansiIcon, KelompokIcon, AnggotaIcon, TabunganIcon } from '../ui/AppIcons'
+import {
+  InstansiIcon,
+  KelompokIcon,
+  AnggotaIcon,
+  TabunganIcon,
+  SetoranIcon,
+  PenarikanIcon,
+  KeuanganIcon,
+} from '../ui/AppIcons'
 
 const tones = {
   emerald: 'bg-gradient-to-tl from-emerald-800 to-emerald-600 text-white shadow-md shadow-emerald-900/20',
@@ -31,7 +39,10 @@ const StatCard = memo(function StatCard({
     Icon === InstansiIcon ||
     Icon === KelompokIcon ||
     Icon === AnggotaIcon ||
-    Icon === TabunganIcon
+    Icon === TabunganIcon ||
+    Icon === SetoranIcon ||
+    Icon === PenarikanIcon ||
+    Icon === KeuanganIcon
 
   const content = (
     <>

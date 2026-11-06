@@ -9,6 +9,7 @@ import { Card, CardHeader, CardTitle } from '../../components/ui/Card'
 import Button from '../../components/ui/Button'
 import PenarikanForm from '../../components/forms/PenarikanForm'
 import { cetakBuktiTransaksi } from '../../utils/exportBuktiTransaksi'
+import { PenarikanIcon } from '../../components/ui/AppIcons'
 
 export default function PenarikanPage() {
   const createPenarikan = useCreatePenarikan()
@@ -47,7 +48,10 @@ export default function PenarikanPage() {
     <div className="mx-auto max-w-lg space-y-4">
       <Card>
         <CardHeader>
-          <CardTitle>Penarikan Tabungan Qurban</CardTitle>
+          <CardTitle className="flex items-center gap-2.5">
+            <PenarikanIcon className="h-6 w-6" />
+            <span>Penarikan Tabungan Qurban</span>
+          </CardTitle>
         </CardHeader>
         <PenarikanForm onSubmit={handleSubmit} loading={createPenarikan.isPending} />
       </Card>

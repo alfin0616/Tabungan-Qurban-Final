@@ -36,6 +36,9 @@ import {
   KelompokIcon,
   AnggotaIcon,
   TabunganIcon,
+  SetoranIcon,
+  PenarikanIcon,
+  KeuanganIcon,
 } from '../ui/AppIcons'
 
 // Top-level reguler menu (untuk Admin Instansi & Jamaah)
@@ -94,7 +97,7 @@ const regularMenuGroups = [
   {
     id: 'keuangan',
     label: 'Keuangan',
-    icon: Wallet,
+    icon: KeuanganIcon,
     color: 'text-emerald-300',
     bg: 'bg-emerald-500/20',
     description: 'Pilih menu transaksi & laporan keuangan di bawah ini.',
@@ -102,7 +105,7 @@ const regularMenuGroups = [
       {
         to: '/transaksi/setoran',
         label: 'Setoran',
-        icon: ArrowDownCircle,
+        icon: SetoranIcon,
         color: 'text-emerald-400',
         bg: 'bg-emerald-500/20',
         adminOnly: true,
@@ -110,7 +113,7 @@ const regularMenuGroups = [
       {
         to: '/transaksi/penarikan',
         label: 'Penarikan',
-        icon: ArrowUpCircle,
+        icon: PenarikanIcon,
         color: 'text-rose-400',
         bg: 'bg-rose-500/20',
         adminOnly: true,
