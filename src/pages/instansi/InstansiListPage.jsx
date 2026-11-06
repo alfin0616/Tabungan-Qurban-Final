@@ -10,6 +10,7 @@ import toast from 'react-hot-toast'
 import Pagination from '../../components/ui/Pagination'
 import EmptyState from '../../components/ui/EmptyState'
 import { useDebounce } from 'use-debounce'
+import { InstansiIcon } from '../../components/ui/AppIcons'
 
 export default function InstansiListPage() {
   const [searchTerm, setSearchTerm] = useState('')
@@ -73,8 +74,8 @@ export default function InstansiListPage() {
         {/* Argon Card Header */}
         <div className="p-5 border-b border-border/80 dark:border-border-dark flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="flex items-start sm:items-center gap-3.5">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-tl from-emerald-800 to-emerald-600 text-white shadow-md shadow-emerald-900/20">
-              <Building2 className="h-5 w-5" />
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-500/15 p-2 shadow-sm">
+              <InstansiIcon className="h-8 w-8" />
             </div>
             <div>
               <h1 className="text-lg sm:text-xl font-bold text-ink dark:text-white">
@@ -119,7 +120,7 @@ export default function InstansiListPage() {
             </div>
           ) : data?.data?.length === 0 ? (
             <EmptyState
-              icon={Building2}
+              icon={InstansiIcon}
               title="Belum ada data Instansi"
               description="Tambahkan instansi atau masjid pertama Anda sekarang."
               actionLabel="Tambah Instansi"
@@ -244,7 +245,7 @@ export default function InstansiListPage() {
                 <tr>
                   <td colSpan="6" className="p-0">
                     <EmptyState
-                      icon={Building2}
+                      icon={InstansiIcon}
                       title="Belum ada data Instansi"
                       description="Tambahkan instansi atau masjid pertama Anda sekarang."
                       actionLabel="Tambah Instansi"

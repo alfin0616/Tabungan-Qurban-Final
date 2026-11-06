@@ -24,6 +24,7 @@ import Modal from '../../components/modal/Modal'
 import ConfirmModal from '../../components/modal/ConfirmModal'
 import AnggotaTable from '../../components/tables/AnggotaTable'
 import AnggotaForm from '../../components/forms/AnggotaForm'
+import { AnggotaIcon, KelompokIcon } from '../../components/ui/AppIcons'
 
 export default function AnggotaListPage() {
   const { user, profile, anggotaSaya, isAdmin, isSuperAdmin, isJamaah } = useAuth()
@@ -176,8 +177,8 @@ export default function AnggotaListPage() {
         <div className="rounded-2xl border border-emerald-500/25 bg-surface dark:bg-surface-dark p-5 shadow-argon">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-border dark:border-border-dark pb-4">
             <div className="flex items-start gap-3.5">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-600 text-white shadow-soft">
-                <Users className="h-6 w-6" />
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-indigo-500/15 p-2 shadow-sm">
+                <KelompokIcon className="h-8 w-8" />
               </div>
               <div>
                 <div className="flex flex-wrap items-center gap-2">
@@ -399,7 +400,7 @@ export default function AnggotaListPage() {
           </div>
         ) : !tableRows.length ? (
           <EmptyState
-            icon={Users}
+            icon={AnggotaIcon}
             title="Belum ada data anggota"
             description="Tambahkan anggota baru atau ubah filter pencarian instansi/kelompok."
           />

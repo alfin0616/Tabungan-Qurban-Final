@@ -14,6 +14,7 @@ import {
   ArrowUpCircle,
   ChevronRight,
   Clock,
+  User,
 } from 'lucide-react'
 import {
   ResponsiveContainer,
@@ -33,6 +34,11 @@ import TargetQurbanCard from '../../components/cards/TargetQurbanCard'
 import AiInsightCard from '../../components/dashboard/AiInsightCard'
 import WaPaymentReminderCard from '../../components/dashboard/WaPaymentReminderCard'
 import InfoRekeningInstansiCard from '../../components/cards/InfoRekeningInstansiCard'
+import {
+  AnggotaIcon,
+  KelompokIcon,
+  TabunganIcon,
+} from '../../components/ui/AppIcons'
 import { Card, CardHeader, CardTitle } from '../../components/ui/Card'
 import { SkeletonCard, SkeletonChart } from '../../components/ui/Skeleton'
 import EmptyState from '../../components/ui/EmptyState'
@@ -115,7 +121,7 @@ export default function DashboardPage() {
         ) : (
           <div className="grid grid-cols-2 gap-2.5 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <StatCard
-              icon={Users}
+              icon={AnggotaIcon}
               tone="emerald"
               label="Total Anggota"
               value={summary?.totalAnggota ?? 0}
@@ -123,7 +129,7 @@ export default function DashboardPage() {
               to="/anggota"
             />
             <StatCard
-              icon={Wallet}
+              icon={TabunganIcon}
               tone="warning"
               label="Total Saldo"
               value={formatCurrency(summary?.totalSaldo)}
@@ -189,8 +195,8 @@ export default function DashboardPage() {
                 to="/anggota"
                 className="group flex flex-col items-center justify-center rounded-2xl border border-border/80 dark:border-border-dark bg-surface dark:bg-surface-dark p-3.5 text-center shadow-2xs hover:border-emerald-500 hover:shadow-sm transition-all"
               >
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform">
-                  <Users className="h-5 w-5" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-500/15 text-sky-600 dark:text-sky-400 group-hover:scale-110 transition-transform">
+                  <AnggotaIcon className="h-5 w-5" />
                 </div>
                 <span className="mt-2 text-xs font-bold text-ink dark:text-white">Anggota</span>
                 <span className="text-[10px] text-ink-muted dark:text-ink-muted-dark">Data jamaah</span>
@@ -200,8 +206,8 @@ export default function DashboardPage() {
                 to="/kelompok"
                 className="group flex flex-col items-center justify-center rounded-2xl border border-border/80 dark:border-border-dark bg-surface dark:bg-surface-dark p-3.5 text-center shadow-2xs hover:border-emerald-500 hover:shadow-sm transition-all"
               >
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 group-hover:scale-110 transition-transform">
-                  <Layers className="h-5 w-5" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform">
+                  <KelompokIcon className="h-5 w-5" />
                 </div>
                 <span className="mt-2 text-xs font-bold text-ink dark:text-white">Kelompok</span>
                 <span className="text-[10px] text-ink-muted dark:text-ink-muted-dark">Grup qurban</span>
@@ -225,7 +231,7 @@ export default function DashboardPage() {
                 className="group flex flex-col items-center justify-center rounded-2xl border border-border/80 dark:border-border-dark bg-surface dark:bg-surface-dark p-3.5 text-center shadow-2xs hover:border-emerald-500 hover:shadow-sm transition-all"
               >
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform">
-                  <Coins className="h-5 w-5" />
+                  <TabunganIcon className="h-5 w-5" />
                 </div>
                 <span className="mt-2 text-xs font-bold text-ink dark:text-white">Tabungan</span>
                 <span className="text-[10px] text-ink-muted dark:text-ink-muted-dark">Saldo & target</span>
@@ -257,8 +263,8 @@ export default function DashboardPage() {
                 to="/profile"
                 className="group flex flex-col items-center justify-center rounded-2xl border border-border/80 dark:border-border-dark bg-surface dark:bg-surface-dark p-3.5 text-center shadow-2xs hover:border-emerald-500 hover:shadow-sm transition-all"
               >
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 group-hover:scale-110 transition-transform">
-                  <Users className="h-5 w-5" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/15 text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform">
+                  <User className="h-5 w-5" />
                 </div>
                 <span className="mt-2 text-xs font-bold text-ink dark:text-white">Akun Saya</span>
                 <span className="text-[10px] text-ink-muted dark:text-ink-muted-dark">Profil & PIN</span>

@@ -26,6 +26,7 @@ import Input from '../../components/ui/Input'
 import Select from '../../components/ui/Select'
 import Button from '../../components/ui/Button'
 import InfoRekeningInstansiCard from '../../components/cards/InfoRekeningInstansiCard'
+import { TabunganIcon } from '../../components/ui/AppIcons'
 import {
   formatCurrency,
   calculateSkemaTabungan,
@@ -190,9 +191,14 @@ export default function TabunganListPage() {
       <InfoRekeningInstansiCard />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <Card>
-          <p className="text-sm text-ink-muted dark:text-ink-muted-dark">Total Tabungan Seluruh Anggota</p>
-          <p className="mt-1 text-2xl font-bold text-emerald-600">{formatCurrency(totalSaldo)}</p>
+        <Card className="flex items-center justify-between">
+          <div>
+            <p className="text-sm text-ink-muted dark:text-ink-muted-dark">Total Tabungan Seluruh Anggota</p>
+            <p className="mt-1 text-2xl font-bold text-emerald-600">{formatCurrency(totalSaldo)}</p>
+          </div>
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-500/15 p-2">
+            <TabunganIcon className="h-7 w-7" />
+          </div>
         </Card>
         <Card className="border-warning/30 bg-warning-100/40 dark:bg-warning/10">
           <div className="flex items-center gap-1.5 text-warning">
@@ -281,7 +287,7 @@ export default function TabunganListPage() {
             <Spinner />
           </div>
         ) : !filteredData?.length ? (
-          <EmptyState icon={Coins} title="Belum ada rekening tabungan pada filter ini" />
+          <EmptyState icon={TabunganIcon} title="Belum ada rekening tabungan pada filter ini" />
         ) : (
           <TabunganTable
             data={filteredData}

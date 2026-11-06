@@ -1,10 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
-  Building2,
-  Users,
-  Layers,
-  Coins,
   ArrowDownCircle,
   ArrowUpCircle,
   History,
@@ -31,6 +27,12 @@ import { useAuth } from '../../context/AuthContext'
 import Avatar from '../../components/ui/Avatar'
 import ProfileForm from '../../components/forms/ProfileForm'
 import { cn } from '../../lib/cn'
+import {
+  InstansiIcon,
+  KelompokIcon,
+  AnggotaIcon,
+  TabunganIcon,
+} from '../../components/ui/AppIcons'
 
 export default function ProfilePage() {
   const { user, profile, logout, isAdmin, isSuperAdmin, instansiSaya } = useAuth()
@@ -55,20 +57,20 @@ export default function ProfilePage() {
   // 1. Master Data
   const masterDataMenus = isSuperAdmin
     ? [
-        { to: '/instansi', label: 'Manajemen Instansi', icon: Building2, color: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' },
-        { to: '/kelompok', label: 'Kelompok Qurban', icon: Layers, color: 'bg-indigo-500/15 text-indigo-600 dark:text-indigo-400' },
-        { to: '/anggota', label: 'Data Anggota / Jamaah', icon: Users, color: 'bg-amber-500/15 text-amber-600 dark:text-amber-400' },
-        { to: '/tabungan', label: 'Tabungan Qurban', icon: Coins, color: 'bg-teal-500/15 text-teal-600 dark:text-teal-400' },
+        { to: '/instansi', label: 'Manajemen Instansi', icon: InstansiIcon, color: 'bg-amber-500/15 text-amber-600 dark:text-amber-400' },
+        { to: '/kelompok', label: 'Kelompok Qurban', icon: KelompokIcon, color: 'bg-indigo-500/15 text-indigo-600 dark:text-indigo-400' },
+        { to: '/anggota', label: 'Data Anggota / Jamaah', icon: AnggotaIcon, color: 'bg-sky-500/15 text-sky-600 dark:text-sky-400' },
+        { to: '/tabungan', label: 'Tabungan Qurban', icon: TabunganIcon, color: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' },
       ]
     : isAdmin
     ? [
-        { to: '/kelompok', label: 'Kelompok Qurban', icon: Layers, color: 'bg-indigo-500/15 text-indigo-600 dark:text-indigo-400' },
-        { to: '/anggota', label: 'Data Anggota', icon: Users, color: 'bg-amber-500/15 text-amber-600 dark:text-amber-400' },
-        { to: '/tabungan', label: 'Tabungan Jamaah', icon: Coins, color: 'bg-teal-500/15 text-teal-600 dark:text-teal-400' },
+        { to: '/kelompok', label: 'Kelompok Qurban', icon: KelompokIcon, color: 'bg-indigo-500/15 text-indigo-600 dark:text-indigo-400' },
+        { to: '/anggota', label: 'Data Anggota', icon: AnggotaIcon, color: 'bg-sky-500/15 text-sky-600 dark:text-sky-400' },
+        { to: '/tabungan', label: 'Tabungan Jamaah', icon: TabunganIcon, color: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' },
       ]
     : [
-        { to: '/tabungan', label: 'Tabungan Saya', icon: Coins, color: 'bg-teal-500/15 text-teal-600 dark:text-teal-400' },
-        { to: '/kelompok', label: 'Kelompok Qurban Saya', icon: Layers, color: 'bg-indigo-500/15 text-indigo-600 dark:text-indigo-400' },
+        { to: '/tabungan', label: 'Tabungan Saya', icon: TabunganIcon, color: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' },
+        { to: '/kelompok', label: 'Kelompok Qurban Saya', icon: KelompokIcon, color: 'bg-indigo-500/15 text-indigo-600 dark:text-indigo-400' },
       ]
 
   // 2. Keuangan & Transaksi
@@ -77,7 +79,7 @@ export default function ProfilePage() {
         { to: '/transaksi/setoran', label: 'Input Setoran Kas', icon: ArrowDownCircle, color: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' },
         { to: '/transaksi/penarikan', label: 'Penarikan Dana', icon: ArrowUpCircle, color: 'bg-rose-500/15 text-rose-600 dark:text-rose-400' },
         { to: '/transaksi/riwayat', label: 'Riwayat Transaksi', icon: History, color: 'bg-indigo-500/15 text-indigo-600 dark:text-indigo-400' },
-        { to: '/pengeluaran', label: 'Pengeluaran Operasional', icon: Wallet, color: 'bg-rose-500/15 text-rose-600 dark:text-rose-400' },
+        { to: '/pengeluaran', label: 'Pengeluaran Operasional', icon: Wallet, color: 'bg-pink-500/15 text-pink-600 dark:text-pink-400' },
         { to: '/laporan', label: 'Report Center / Unduh Rekap', icon: FileBarChart, color: 'bg-sky-500/15 text-sky-600 dark:text-sky-400' },
       ]
     : isSuperAdmin
@@ -95,15 +97,15 @@ export default function ProfilePage() {
     ? [
         { to: '/superadmin/monitoring', label: 'Monitoring Nasional', icon: Activity, color: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' },
         { to: '/superadmin/logs', label: 'System & Error Logs', icon: Bug, color: 'bg-rose-500/15 text-rose-600 dark:text-rose-400' },
-        { to: '/audit-log', label: 'Activity Center / Audit Log', icon: ScrollText, color: 'bg-indigo-500/15 text-indigo-600 dark:text-indigo-400' },
+        { to: '/audit-log', label: 'Activity Center / Audit Log', icon: ScrollText, color: 'bg-purple-500/15 text-purple-600 dark:text-purple-400' },
         { to: '/backup', label: 'Backup & Recovery Data', icon: HardDrive, color: 'bg-amber-500/15 text-amber-600 dark:text-amber-400' },
-        { to: '/superadmin/pengaturan', label: 'Pengaturan Sistem Nasional', icon: ShieldCheck, color: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' },
+        { to: '/superadmin/pengaturan', label: 'Pengaturan Sistem Nasional', icon: ShieldCheck, color: 'bg-teal-500/15 text-teal-600 dark:text-teal-400' },
       ]
     : isAdmin
     ? [
-        { to: '/settings', label: 'Pengaturan Instansi & Rekening', icon: Settings, color: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' },
+        { to: '/settings', label: 'Pengaturan Instansi & Rekening', icon: Settings, color: 'bg-teal-500/15 text-teal-600 dark:text-teal-400' },
         { to: '/files', label: 'File Manager & Dokumen', icon: FolderOpen, color: 'bg-amber-500/15 text-amber-600 dark:text-amber-400' },
-        { to: '/activity-center', label: 'Activity Center', icon: Activity, color: 'bg-indigo-500/15 text-indigo-600 dark:text-indigo-400' },
+        { to: '/activity-center', label: 'Activity Center', icon: Activity, color: 'bg-purple-500/15 text-purple-600 dark:text-purple-400' },
       ]
     : []
 
@@ -144,8 +146,8 @@ export default function ProfilePage() {
             <span>{userRole}</span>
           </span>
           {instansiName && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 dark:bg-slate-800 px-3 py-0.5 text-xs font-semibold text-ink-muted dark:text-ink-muted-dark">
-              <Building2 className="h-3 w-3" />
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 dark:bg-slate-800 px-3 py-0.5 text-xs font-semibold text-ink-muted dark:text-ink-muted-dark">
+              <InstansiIcon className="h-3.5 w-3.5" />
               <span>{instansiName}</span>
             </span>
           )}
@@ -219,7 +221,7 @@ export default function ProfilePage() {
             >
               <div className="flex items-center gap-3 min-w-0">
                 <div className={cn('flex h-9 w-9 items-center justify-center rounded-xl transition-transform group-hover:scale-105', menu.color)}>
-                  <menu.icon className="h-4 w-4" />
+                  <menu.icon className="h-5 w-5" />
                 </div>
                 <span className="text-sm font-bold text-ink dark:text-white">{menu.label}</span>
               </div>
@@ -243,7 +245,7 @@ export default function ProfilePage() {
             >
               <div className="flex items-center gap-3 min-w-0">
                 <div className={cn('flex h-9 w-9 items-center justify-center rounded-xl transition-transform group-hover:scale-105', menu.color)}>
-                  <menu.icon className="h-4 w-4" />
+                  <menu.icon className="h-5 w-5" />
                 </div>
                 <span className="text-sm font-bold text-ink dark:text-white">{menu.label}</span>
               </div>

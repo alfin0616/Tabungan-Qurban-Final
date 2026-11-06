@@ -31,10 +31,22 @@ import { cn } from '../../lib/cn'
 import { useAuth } from '../../context/AuthContext'
 import { useSettings } from '../../hooks/useSettings'
 import logoSQNn from '../../assets/siqurban-logo-v4.png'
+import {
+  InstansiIcon,
+  KelompokIcon,
+  AnggotaIcon,
+  TabunganIcon,
+} from '../ui/AppIcons'
 
 // Top-level reguler menu (untuk Admin Instansi & Jamaah)
 const topLevelMenu = [
-  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  {
+    to: '/dashboard',
+    label: 'Dashboard',
+    icon: LayoutDashboard,
+    color: 'text-emerald-300',
+    bg: 'bg-emerald-500/20',
+  },
 ]
 
 // Kelompok Dropdown Reguler (Master Data, Keuangan, dan Pengaturan)
@@ -43,44 +55,142 @@ const regularMenuGroups = [
     id: 'master-data',
     label: 'Master Data',
     icon: Database,
-    description: 'Pilih menu di bawah ini.',
+    color: 'text-amber-300',
+    bg: 'bg-amber-500/20',
+    description: 'Pilih menu data qurban di bawah ini.',
     items: [
-      { to: '/instansi', label: 'Instansi', icon: Building2, superAdminOnly: true },
-      { to: '/kelompok', label: 'Kelompok', icon: Layers, adminOnly: true },
-      { to: '/anggota', label: 'Anggota', icon: Users },
-      { to: '/tabungan', label: 'Tabungan', icon: Coins },
+      {
+        to: '/instansi',
+        label: 'Instansi',
+        icon: InstansiIcon,
+        color: 'text-amber-300',
+        bg: 'bg-amber-500/15',
+        superAdminOnly: true,
+      },
+      {
+        to: '/kelompok',
+        label: 'Kelompok',
+        icon: KelompokIcon,
+        color: 'text-emerald-300',
+        bg: 'bg-emerald-500/15',
+        adminOnly: true,
+      },
+      {
+        to: '/anggota',
+        label: 'Anggota',
+        icon: AnggotaIcon,
+        color: 'text-sky-300',
+        bg: 'bg-sky-500/15',
+      },
+      {
+        to: '/tabungan',
+        label: 'Tabungan',
+        icon: TabunganIcon,
+        color: 'text-amber-300',
+        bg: 'bg-amber-500/15',
+      },
     ],
   },
   {
     id: 'keuangan',
     label: 'Keuangan',
     icon: Wallet,
+    color: 'text-emerald-300',
+    bg: 'bg-emerald-500/20',
     description: 'Pilih menu transaksi & laporan keuangan di bawah ini.',
     items: [
-      { to: '/transaksi/setoran', label: 'Setoran', icon: ArrowDownCircle, adminOnly: true },
-      { to: '/transaksi/penarikan', label: 'Penarikan', icon: ArrowUpCircle, adminOnly: true },
-      { to: '/transaksi/riwayat', label: 'Riwayat Transaksi', icon: History },
-      { to: '/pengeluaran', label: 'Pengeluaran Operasional', icon: Wallet, adminOnly: true },
-      { to: '/laporan', label: 'Report Center', icon: FileBarChart },
+      {
+        to: '/transaksi/setoran',
+        label: 'Setoran',
+        icon: ArrowDownCircle,
+        color: 'text-emerald-400',
+        bg: 'bg-emerald-500/20',
+        adminOnly: true,
+      },
+      {
+        to: '/transaksi/penarikan',
+        label: 'Penarikan',
+        icon: ArrowUpCircle,
+        color: 'text-rose-400',
+        bg: 'bg-rose-500/20',
+        adminOnly: true,
+      },
+      {
+        to: '/transaksi/riwayat',
+        label: 'Riwayat Transaksi',
+        icon: History,
+        color: 'text-indigo-400',
+        bg: 'bg-indigo-500/20',
+      },
+      {
+        to: '/pengeluaran',
+        label: 'Pengeluaran Operasional',
+        icon: Wallet,
+        color: 'text-pink-400',
+        bg: 'bg-pink-500/20',
+        adminOnly: true,
+      },
+      {
+        to: '/laporan',
+        label: 'Report Center',
+        icon: FileBarChart,
+        color: 'text-sky-400',
+        bg: 'bg-sky-500/20',
+      },
     ],
   },
   {
     id: 'pengaturan-grup',
     label: 'Pengaturan',
     icon: Settings,
+    color: 'text-teal-300',
+    bg: 'bg-teal-500/20',
     description: 'Pilih menu profil & sistem di bawah ini.',
     items: [
-      { to: '/profile', label: 'Profil Saya', icon: User },
-      { to: '/settings', label: 'Pengaturan', icon: Settings, adminOnly: true },
-      { to: '/files', label: 'File Manager', icon: FolderOpen, adminOnly: true },
-      { to: '/activity-center', label: 'Activity Center', icon: Activity, adminOnly: true },
+      {
+        to: '/profile',
+        label: 'Profil Saya',
+        icon: User,
+        color: 'text-blue-400',
+        bg: 'bg-blue-500/20',
+      },
+      {
+        to: '/settings',
+        label: 'Pengaturan',
+        icon: Settings,
+        color: 'text-teal-400',
+        bg: 'bg-teal-500/20',
+        adminOnly: true,
+      },
+      {
+        to: '/files',
+        label: 'File Manager',
+        icon: FolderOpen,
+        color: 'text-amber-400',
+        bg: 'bg-amber-500/20',
+        adminOnly: true,
+      },
+      {
+        to: '/activity-center',
+        label: 'Activity Center',
+        icon: Activity,
+        color: 'text-purple-400',
+        bg: 'bg-purple-500/20',
+        adminOnly: true,
+      },
     ],
   },
 ]
 
 // Top-level Super Admin menu
 const topLevelSuperAdminMenu = [
-  { to: '/superadmin/dashboard', label: 'Dashboard SA', icon: LayoutDashboard },
+  {
+    to: '/superadmin/dashboard',
+    label: 'Dashboard SA',
+    icon: LayoutDashboard,
+    color: 'text-emerald-300',
+    bg: 'bg-emerald-500/20',
+  },
 ]
 
 // Kelompok Dropdown Super Admin
@@ -89,13 +199,45 @@ const superAdminMenuGroups = [
     id: 'sa-monitoring',
     label: 'Sistem & Monitoring',
     icon: Activity,
+    color: 'text-purple-300',
+    bg: 'bg-purple-500/20',
     description: 'Pilih menu sistem & pemantauan di bawah ini.',
     items: [
-      { to: '/superadmin/monitoring', label: 'Monitoring', icon: Activity },
-      { to: '/superadmin/logs', label: 'System Logs', icon: Bug },
-      { to: '/audit-log', label: 'Activity Center', icon: ScrollText },
-      { to: '/backup', label: 'Backup & Recovery', icon: HardDrive },
-      { to: '/superadmin/pengaturan', label: 'Pengaturan Sistem', icon: ShieldCheck },
+      {
+        to: '/superadmin/monitoring',
+        label: 'Monitoring',
+        icon: Activity,
+        color: 'text-emerald-400',
+        bg: 'bg-emerald-500/20',
+      },
+      {
+        to: '/superadmin/logs',
+        label: 'System Logs',
+        icon: Bug,
+        color: 'text-rose-400',
+        bg: 'bg-rose-500/20',
+      },
+      {
+        to: '/audit-log',
+        label: 'Activity Center',
+        icon: ScrollText,
+        color: 'text-indigo-400',
+        bg: 'bg-indigo-500/20',
+      },
+      {
+        to: '/backup',
+        label: 'Backup & Recovery',
+        icon: HardDrive,
+        color: 'text-amber-400',
+        bg: 'bg-amber-500/20',
+      },
+      {
+        to: '/superadmin/pengaturan',
+        label: 'Pengaturan Sistem',
+        icon: ShieldCheck,
+        color: 'text-teal-400',
+        bg: 'bg-teal-500/20',
+      },
     ],
   },
 ]
@@ -234,7 +376,7 @@ export default function Sidebar({ open, onClose, collapsed: propCollapsed, onTog
               {collapsed && <div className="my-2 hidden border-t border-emerald-700/60 lg:block" />}
 
               {/* Top-level SA (Dashboard SA) */}
-              {topLevelSuperAdminMenu.map(({ to, label, icon: Icon }) => (
+              {topLevelSuperAdminMenu.map(({ to, label, icon: Icon, color, bg }) => (
                 <NavLink
                   key={to}
                   to={to}
@@ -253,7 +395,9 @@ export default function Sidebar({ open, onClose, collapsed: propCollapsed, onTog
                     )
                   }
                 >
-                  <Icon className="h-[18px] w-[18px] shrink-0" />
+                  <div className={cn('flex h-7 w-7 items-center justify-center rounded-lg transition-transform shrink-0', bg || 'bg-white/10')}>
+                    <Icon className={cn('h-4 w-4 shrink-0', color || 'text-emerald-300')} />
+                  </div>
                   <span className={cn('truncate', collapsed && 'lg:hidden')}>{label}</span>
                 </NavLink>
               ))}
@@ -279,7 +423,9 @@ export default function Sidebar({ open, onClose, collapsed: propCollapsed, onTog
                     )}
                   >
                     <div className="flex items-center gap-3 min-w-0">
-                      <GroupIcon className="h-[18px] w-[18px] shrink-0" />
+                      <div className={cn('flex h-7 w-7 items-center justify-center rounded-lg transition-transform shrink-0', group.bg || 'bg-white/10')}>
+                        <GroupIcon className={cn('h-4 w-4 shrink-0', group.color || 'text-emerald-300')} />
+                      </div>
                       <span className={cn('truncate', collapsed && 'lg:hidden')}>{group.label}</span>
                     </div>
                     <ChevronRight
@@ -307,7 +453,7 @@ export default function Sidebar({ open, onClose, collapsed: propCollapsed, onTog
 
           {/* Top-level Reguler (Dashboard) — Hanya untuk Admin Instansi & Jamaah */}
           {!isSuperAdmin &&
-            topLevelMenu.map(({ to, label, icon: Icon }) => (
+            topLevelMenu.map(({ to, label, icon: Icon, color, bg }) => (
               <NavLink
                 key={to}
                 to={to}
@@ -326,7 +472,9 @@ export default function Sidebar({ open, onClose, collapsed: propCollapsed, onTog
                   )
                 }
               >
-                <Icon className="h-[18px] w-[18px] shrink-0" />
+                <div className={cn('flex h-7 w-7 items-center justify-center rounded-lg transition-transform shrink-0', bg || 'bg-white/10')}>
+                  <Icon className={cn('h-4 w-4 shrink-0', color || 'text-emerald-300')} />
+                </div>
                 <span className={cn('truncate', collapsed && 'lg:hidden')}>{label}</span>
               </NavLink>
             ))}
@@ -335,7 +483,7 @@ export default function Sidebar({ open, onClose, collapsed: propCollapsed, onTog
           {regularMenuGroups.map((group) => {
             const GroupIcon = group.icon
             const visibleItems = group.items.filter(
-              (item) => (!item.adminOnly || isAdmin) && (!item.superAdminOnly || isSuperAdmin),
+              (item) => (!item.adminOnly || isAdmin || isSuperAdmin) && (!item.superAdminOnly || isSuperAdmin),
             )
             if (!visibleItems.length) return null
 
@@ -357,7 +505,9 @@ export default function Sidebar({ open, onClose, collapsed: propCollapsed, onTog
                 )}
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <GroupIcon className="h-[18px] w-[18px] shrink-0" />
+                  <div className={cn('flex h-7 w-7 items-center justify-center rounded-lg transition-transform shrink-0', group.bg || 'bg-white/10')}>
+                    <GroupIcon className={cn('h-4 w-4 shrink-0', group.color || 'text-emerald-300')} />
+                  </div>
                   <span className={cn('truncate', collapsed && 'lg:hidden')}>{group.label}</span>
                 </div>
                 <ChevronRight
@@ -382,7 +532,9 @@ export default function Sidebar({ open, onClose, collapsed: propCollapsed, onTog
               collapsed && 'lg:justify-center lg:px-2',
             )}
           >
-            <LogOut className="h-[18px] w-[18px] shrink-0" />
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-rose-500/20 text-rose-300 shrink-0">
+              <LogOut className="h-4 w-4 shrink-0 text-rose-300" />
+            </div>
             <span className={cn('truncate', collapsed && 'lg:hidden')}>Keluar</span>
           </button>
         </nav>
@@ -476,13 +628,13 @@ export default function Sidebar({ open, onClose, collapsed: propCollapsed, onTog
                     >
                       <div
                         className={cn(
-                          'mb-2 sm:mb-3 flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-xl transition-colors shadow-sm',
+                          'mb-2 sm:mb-3 flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-2xl transition-all shadow-sm',
                           isActive
-                            ? 'bg-white text-emerald-800 font-bold'
-                            : 'bg-emerald-950/70 text-emerald-300 group-hover:bg-emerald-600 group-hover:text-white',
+                            ? 'bg-white text-emerald-800 font-bold ring-2 ring-emerald-300 scale-105 shadow-md'
+                            : cn(item.bg || 'bg-white/10', 'group-hover:scale-110 group-hover:bg-white/20'),
                         )}
                       >
-                        <ItemIcon className="h-5 w-5 sm:h-6 sm:w-6" />
+                        <ItemIcon className={cn('h-6 w-6 sm:h-7 sm:w-7', !isActive && (item.color || 'text-emerald-300'))} />
                       </div>
                       <span
                         className={cn(

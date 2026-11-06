@@ -20,6 +20,12 @@ import {
   ChevronRight,
 } from 'lucide-react'
 import {
+  InstansiIcon,
+  KelompokIcon,
+  AnggotaIcon,
+  TabunganIcon,
+} from '../../components/ui/AppIcons'
+import {
   ResponsiveContainer,
   AreaChart,
   Area,
@@ -237,8 +243,8 @@ export default function SuperAdminDashboardPage() {
       {/* ── Header inside Argon Card (Desktop) ── */}
       <div className="hidden md:flex rounded-2xl border border-border/80 dark:border-border-dark bg-surface dark:bg-surface-dark p-5 shadow-argon flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-tl from-emerald-800 to-emerald-600 text-white shadow-md shadow-emerald-900/20">
-            <Building2 className="h-5 w-5" />
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-500/15 p-2 shadow-sm">
+            <InstansiIcon className="h-8 w-8" />
           </div>
           <div>
             <h2 className="text-lg sm:text-xl font-bold text-ink dark:text-ink-dark">Dashboard Analitik Super Admin</h2>
@@ -277,7 +283,7 @@ export default function SuperAdminDashboardPage() {
         </div>
         <div className="grid grid-cols-2 gap-2.5 sm:gap-4 lg:grid-cols-3">
           <StatCard
-            icon={Building2}
+            icon={InstansiIcon}
             tone="emerald"
             label="Total Instansi"
             value={loadingStats ? '—' : statistik?.total_instansi ?? 0}
@@ -285,7 +291,7 @@ export default function SuperAdminDashboardPage() {
             to="/superadmin/instansi"
           />
           <StatCard
-            icon={Layers}
+            icon={KelompokIcon}
             tone="emerald"
             label="Total Kelompok"
             value={loadingStats ? '—' : statistik?.total_kelompok ?? 0}
@@ -293,7 +299,7 @@ export default function SuperAdminDashboardPage() {
             to="/kelompok"
           />
           <StatCard
-            icon={Users}
+            icon={AnggotaIcon}
             tone="emerald"
             label="Total Jamaah"
             value={loadingStats ? '—' : statistik?.total_jamaah ?? 0}
@@ -301,7 +307,7 @@ export default function SuperAdminDashboardPage() {
             to="/anggota"
           />
           <StatCard
-            icon={Wallet}
+            icon={TabunganIcon}
             tone="warning"
             label="Total Saldo Nasional"
             value={loadingStats ? '—' : formatCurrency(totalSaldo)}
@@ -337,7 +343,7 @@ export default function SuperAdminDashboardPage() {
             to="/superadmin/monitoring"
             className="group flex flex-col items-center justify-center rounded-2xl border border-border/80 dark:border-border-dark bg-surface dark:bg-surface-dark p-3.5 text-center shadow-2xs hover:border-emerald-500 hover:shadow-sm transition-all"
           >
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-500/15 text-purple-600 dark:text-purple-400 group-hover:scale-110 transition-transform">
               <Activity className="h-5 w-5" />
             </div>
             <span className="mt-2 text-xs font-bold text-ink dark:text-white">Monitoring</span>
@@ -348,8 +354,8 @@ export default function SuperAdminDashboardPage() {
             to="/instansi"
             className="group flex flex-col items-center justify-center rounded-2xl border border-border/80 dark:border-border-dark bg-surface dark:bg-surface-dark p-3.5 text-center shadow-2xs hover:border-emerald-500 hover:shadow-sm transition-all"
           >
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform">
-              <Building2 className="h-5 w-5" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 group-hover:scale-110 transition-transform">
+              <InstansiIcon className="h-5 w-5" />
             </div>
             <span className="mt-2 text-xs font-bold text-ink dark:text-white">Instansi</span>
             <span className="text-[10px] text-ink-muted dark:text-ink-muted-dark">Data mitra</span>
@@ -370,7 +376,7 @@ export default function SuperAdminDashboardPage() {
             to="/superadmin/pengaturan"
             className="group flex flex-col items-center justify-center rounded-2xl border border-border/80 dark:border-border-dark bg-surface dark:bg-surface-dark p-3.5 text-center shadow-2xs hover:border-emerald-500 hover:shadow-sm transition-all"
           >
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 group-hover:scale-110 transition-transform">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-500/15 text-teal-600 dark:text-teal-400 group-hover:scale-110 transition-transform">
               <ShieldCheck className="h-5 w-5" />
             </div>
             <span className="mt-2 text-xs font-bold text-ink dark:text-white">Pengaturan</span>

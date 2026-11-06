@@ -2,6 +2,7 @@ import { memo } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowUpRight } from 'lucide-react'
 import { cn } from '../../lib/cn'
+import { InstansiIcon, KelompokIcon, AnggotaIcon, TabunganIcon } from '../ui/AppIcons'
 
 const tones = {
   emerald: 'bg-gradient-to-tl from-emerald-800 to-emerald-600 text-white shadow-md shadow-emerald-900/20',
@@ -26,6 +27,12 @@ const StatCard = memo(function StatCard({
   trend,
   to = null,
 }) {
+  const isCustomIcon =
+    Icon === InstansiIcon ||
+    Icon === KelompokIcon ||
+    Icon === AnggotaIcon ||
+    Icon === TabunganIcon
+
   const content = (
     <>
       {/* ── TAMPILAN MOBILE (< 768px): Minimalis 2-Kolom Sesuai Contoh App ── */}
@@ -33,10 +40,12 @@ const StatCard = memo(function StatCard({
         <div
           className={cn(
             'flex h-9 w-9 items-center justify-center rounded-xl transition-transform',
-            softTones[tone] || softTones.emerald,
+            isCustomIcon
+              ? 'bg-slate-100/90 dark:bg-slate-800/80 p-1.5'
+              : softTones[tone] || softTones.emerald,
           )}
         >
-          <Icon className="h-4 w-4" />
+          <Icon className={isCustomIcon ? 'h-5 w-5 object-contain' : 'h-4 w-4'} />
         </div>
         <p className="mt-2 text-[15px] font-extrabold tracking-tight text-ink dark:text-white truncate leading-tight">
           {value}
@@ -64,12 +73,14 @@ const StatCard = memo(function StatCard({
           </div>
           <div
             className={cn(
-              'flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition-transform duration-200',
-              tones[tone] || tones.emerald,
+              'flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl transition-transform duration-200',
+              isCustomIcon
+                ? 'bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 shadow-sm p-2'
+                : tones[tone] || tones.emerald,
               to && 'group-hover:scale-105',
             )}
           >
-            <Icon className="h-5 w-5" />
+            <Icon className={isCustomIcon ? 'h-7 w-7 object-contain' : 'h-5 w-5'} />
           </div>
         </div>
 
