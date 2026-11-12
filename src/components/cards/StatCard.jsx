@@ -131,7 +131,7 @@ const StatCard = memo(function StatCard({
       <Link
         to={to}
         title={`Klik untuk masuk ke menu ${label} (${value})`}
-        className="group argon-lift block rounded-2xl border border-border/80 dark:border-border-dark bg-surface dark:bg-surface-dark p-3.5 sm:p-5 shadow-2xs sm:shadow-argon transition-all hover:border-emerald-500/60 dark:hover:border-emerald-500/60"
+        className="group argon-lift block min-w-0 overflow-hidden rounded-2xl border border-border/80 dark:border-border-dark bg-surface dark:bg-surface-dark p-3.5 sm:p-5 shadow-2xs sm:shadow-argon transition-all hover:border-emerald-500/60 dark:hover:border-emerald-500/60"
       >
         {content}
       </Link>
@@ -139,7 +139,7 @@ const StatCard = memo(function StatCard({
   }
 
   return (
-    <div className="argon-lift rounded-2xl border border-border/80 dark:border-border-dark bg-surface dark:bg-surface-dark p-3.5 sm:p-5 shadow-2xs sm:shadow-argon">
+    <div className="argon-lift min-w-0 overflow-hidden rounded-2xl border border-border/80 dark:border-border-dark bg-surface dark:bg-surface-dark p-3.5 sm:p-5 shadow-2xs sm:shadow-argon">
       {content}
     </div>
   )

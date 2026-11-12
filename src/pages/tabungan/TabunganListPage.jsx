@@ -30,6 +30,7 @@ import { TabunganIcon } from '../../components/ui/AppIcons'
 import {
   formatCurrency,
   calculateSkemaTabungan,
+  resolveEffectiveTarget,
   LAMA_TABUNGAN_PRESETS,
   DAFTAR_BULAN,
   hitungLamaTabunganDariBulan,
@@ -46,7 +47,7 @@ export default function TabunganListPage() {
   const [editing, setEditing] = useState(null)
   const [target, setTarget] = useState('')
   const [periodeSetoran, setPeriodeSetoran] = useState('bulanan')
-  const [lamaTabungan, setLamaTabungan] = useState('12')
+  const [lamaTabungan, setLamaTabungan] = useState('10')
   const [customLama, setCustomLama] = useState(false)
   const [bulanMulai, setBulanMulai] = useState(7)
   const [bulanSelesai, setBulanSelesai] = useState(4)
@@ -56,7 +57,7 @@ export default function TabunganListPage() {
   const [isSyncingAll, setIsSyncingAll] = useState(false)
 
   const totalSaldo = (data ?? []).reduce((sum, t) => sum + Number(t.saldo || 0), 0)
-  const totalTarget = (data ?? []).reduce((sum, t) => sum + Number(t.target || 0), 0)
+  const totalTarget = (data ?? []).reduce((sum, t) => sum + Number(resolveEffectiveTarget(t, 0)), 0)
 
   // Kelompok dari data tabungan
   const kelompokOptions = useMemo(() => {
@@ -84,10 +85,10 @@ export default function TabunganListPage() {
   }, [data, kelompokFilter])
 
   function openEdit(item) {
-    const initLama = Number(item.lama_tabungan || item.anggota?.lama_tabungan || 12)
+    const initLama = Number(item.lama_tabungan || item.anggota?.lama_tabungan || 10)
     const isPreset = LAMA_TABUNGAN_PRESETS.some((p) => p.value === initLama)
     setEditing(item)
-    setTarget(String(item.target ?? 3000000))
+    setTarget(String(resolveEffectiveTarget(item)))
     setPeriodeSetoran(item.periode_setoran || item.anggota?.periode_setoran || 'bulanan')
     setLamaTabungan(String(initLama))
     setCustomLama(!isPreset)
@@ -121,7 +122,7 @@ export default function TabunganListPage() {
         target: Number(target) || 3000000,
         saldo: Number(editing?.saldo || 0),
         periode: periodeSetoran,
-        lamaBulan: Number(lamaTabungan) || 12,
+        lamaBulan: Number(lamaTabungan) || 10,
       }),
     [target, editing?.saldo, periodeSetoran, lamaTabungan],
   )
@@ -135,7 +136,7 @@ export default function TabunganListPage() {
         target: numTarget,
         anggota_id: editing.anggota_id || editing.anggota?.id,
         periode_setoran: periodeSetoran,
-        lama_tabungan: Math.max(1, Number(lamaTabungan) || 12),
+        lama_tabungan: Math.max(1, Number(lamaTabungan) || 10),
       })
 
       if (applyToAllInKelompok && kelompokInfo?.id) {
@@ -500,7 +501,13 @@ export default function TabunganListPage() {
           {/* Ringkasan Simulasi */}
           <div className="rounded-2xl border border-border dark:border-border-dark bg-bg dark:bg-bg-dark p-4 space-y-2 text-xs">
             <div className="flex items-center justify-between text-ink-muted dark:text-ink-muted-dark">
-              <span>Sisa Target Tabungan:</span>
+              <span>Total Target Tabungan:</span>
+              <span className="font-bold text-ink dark:text-ink-dark">
+                {formatCurrency(simulasiModal.target)}
+              </span>
+            </div>
+            <div className="flex items-center justify-between text-ink-muted dark:text-ink-muted-dark">
+              <span>Sisa Pelunasan Saat Ini:</span>
               <span className="font-bold text-ink dark:text-ink-dark">
                 {formatCurrency(simulasiModal.sisaTarget)}
               </span>
@@ -511,14 +518,35 @@ export default function TabunganListPage() {
                 {simulasiModal.lamaBulan} Bulan ({simulasiModal.totalPeriode}x {simulasiModal.labelPeriode})
               </span>
             </div>
-            <div className="border-t border-border dark:border-border-dark pt-2 flex items-center justify-between">
-              <span className="flex items-center gap-1.5 font-semibold text-emerald-700 dark:text-emerald-400">
-                <Calculator className="h-4 w-4" />
-                Estimasi Setoran per {simulasiModal.labelPeriode}:
-              </span>
-              <span className="text-base font-extrabold text-emerald-700 dark:text-emerald-400">
-                {formatCurrency(simulasiModal.nominalPerPeriode)} / {simulasiModal.labelPeriode}
-              </span>
+            <div className="border-t border-border dark:border-border-dark pt-2.5 grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div
+                className={`rounded-xl border p-2.5 ${
+                  simulasiModal.periode === 'bulanan'
+                    ? 'border-emerald-500 bg-emerald-50/70 dark:bg-emerald-950/40'
+                    : 'border-border dark:border-border-dark bg-surface dark:bg-surface-dark opacity-75'
+                }`}
+              >
+                <span className="block text-[10px] font-semibold text-ink-muted dark:text-ink-muted-dark">
+                  Setoran Bulanan Tetap ({simulasiModal.lamaBulan}x):
+                </span>
+                <span className="text-sm font-extrabold text-emerald-700 dark:text-emerald-400">
+                  {formatCurrency(simulasiModal.nominalBulanan)} / bulan
+                </span>
+              </div>
+              <div
+                className={`rounded-xl border p-2.5 ${
+                  simulasiModal.periode === 'mingguan'
+                    ? 'border-emerald-500 bg-emerald-50/70 dark:bg-emerald-950/40'
+                    : 'border-border dark:border-border-dark bg-surface dark:bg-surface-dark opacity-75'
+                }`}
+              >
+                <span className="block text-[10px] font-semibold text-ink-muted dark:text-ink-muted-dark">
+                  Setoran Mingguan Tetap ({simulasiModal.totalMinggu}x):
+                </span>
+                <span className="text-sm font-extrabold text-emerald-700 dark:text-emerald-400">
+                  {formatCurrency(simulasiModal.nominalMingguan)} / minggu
+                </span>
+              </div>
             </div>
           </div>
 

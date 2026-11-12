@@ -83,7 +83,7 @@ export async function getAnggotaList({
   let query = supabase
     .from(TABLE)
     .select(
-      '*, instansi:instansi_id(id, nama_instansi, kode_instansi), kelompok:kelompok_id(id, nama_kelompok, kode_kelompok, jenis_qurban, target_dana, maksimal_anggota), tabungan(saldo, target)',
+      '*, instansi:instansi_id(id, nama_instansi, kode_instansi), kelompok:kelompok_id(id, nama_kelompok, kode_kelompok, jenis_qurban, target_dana, maksimal_anggota), tabungan(*)',
       { count: 'exact' },
     )
     .order('created_at', { ascending: false })
@@ -216,7 +216,7 @@ export async function getAllAnggotaForSelect() {
   const { data, error } = await supabase
     .from(TABLE)
     .select(
-      'id, nama, kode_anggota, kelompok_id, periode_setoran, lama_tabungan, tabungan(id, saldo, target, periode_setoran, lama_tabungan), kelompok:kelompok_id(id, nama_kelompok, target_dana, jenis_qurban, maksimal_anggota)',
+      '*, tabungan(*), kelompok:kelompok_id(id, nama_kelompok, target_dana, jenis_qurban, maksimal_anggota)',
     )
     .eq('status', true)
     .order('nama', { ascending: true })
@@ -227,7 +227,7 @@ export async function getAllAnggotaForSelect() {
 export async function createAnggota(payload) {
   let targetDana = 0
   let instansiId = payload.instansi_id || null
-  const { periode_setoran = 'bulanan', lama_tabungan = 12, ...basePayload } = payload || {}
+  const { periode_setoran = 'bulanan', lama_tabungan = 10, ...basePayload } = payload || {}
 
   if (basePayload.kelompok_id) {
     const { data: klp } = await supabase
@@ -257,7 +257,7 @@ export async function createAnggota(payload) {
   // Coba simpan periode_setoran & lama_tabungan ke database jika kolom sudah ada
   await supabase
     .from(TABLE)
-    .update({ periode_setoran, lama_tabungan: Number(lama_tabungan) || 12 })
+    .update({ periode_setoran, lama_tabungan: Number(lama_tabungan) || 10 })
     .eq('id', data.id)
     .then(() => {})
 
@@ -277,7 +277,7 @@ export async function createAnggota(payload) {
   if (tabRow?.id) {
     await supabase
       .from('tabungan')
-      .update({ periode_setoran, lama_tabungan: Number(lama_tabungan) || 12 })
+      .update({ periode_setoran, lama_tabungan: Number(lama_tabungan) || 10 })
       .eq('id', tabRow.id)
       .then(() => {})
   }
@@ -285,13 +285,13 @@ export async function createAnggota(payload) {
   const enriched = enrichRowWithSkema({
     ...data,
     periode_setoran,
-    lama_tabungan: Number(lama_tabungan) || 12,
+    lama_tabungan: Number(lama_tabungan) || 10,
   })
 
   syncKelompokMembersCache([
     {
       ...enriched,
-      tabungan: [{ saldo: 0, target: targetDana, periode_setoran, lama_tabungan: Number(lama_tabungan) || 12 }],
+      tabungan: [{ saldo: 0, target: targetDana, periode_setoran, lama_tabungan: Number(lama_tabungan) || 10 }],
     },
   ])
 

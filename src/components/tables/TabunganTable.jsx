@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { CalendarClock, Settings2, MessageCircle, Users } from 'lucide-react'
 import Avatar from '../ui/Avatar'
 import Badge from '../ui/Badge'
-import { formatCurrency, calculateSkemaTabungan } from '../../utils/formatCurrency'
+import { formatCurrency, calculateSkemaTabungan, resolveEffectiveTarget } from '../../utils/formatCurrency'
 import { sendDirectWhatsAppReminder } from '../../utils/whatsappReminder'
 
 export default function TabunganTable({
@@ -19,12 +19,14 @@ export default function TabunganTable({
       {/* ============================================================== */}
       <div className="block md:hidden space-y-3.5">
         {data.map((t) => {
-          const persentase = t.target > 0 ? Math.min(100, Math.round((t.saldo / t.target) * 100)) : 0
+          const effectiveTarget = resolveEffectiveTarget(t)
+          const persentase =
+            effectiveTarget > 0 ? Math.min(100, Math.round(((t.saldo || 0) / effectiveTarget) * 100)) : 0
           const skema = calculateSkemaTabungan({
-            target: t.target || 3000000,
+            target: effectiveTarget,
             saldo: t.saldo || 0,
             periode: t.periode_setoran || t.anggota?.periode_setoran || 'bulanan',
-            lamaBulan: t.lama_tabungan || t.anggota?.lama_tabungan || 12,
+            lamaBulan: t.lama_tabungan || t.anggota?.lama_tabungan || 10,
           })
           const canEdit = isAdmin || (currentAnggotaId && t.anggota_id === currentAnggotaId)
           const kelompok = t.anggota?.kelompok
@@ -85,19 +87,17 @@ export default function TabunganTable({
                 <div className="rounded-xl border border-border/70 dark:border-border-dark/70 bg-bg/40 dark:bg-bg-dark/40 p-2.5">
                   <span className="text-[11px] text-ink-muted dark:text-ink-muted-dark block">Target Tabungan</span>
                   <span className="font-bold text-sm text-ink dark:text-ink-dark block mt-0.5 truncate">
-                    {formatCurrency(t.target)}
+                    {formatCurrency(effectiveTarget)}
                   </span>
-                  {kelompok?.target_dana && (
-                    <span className="text-[10px] text-indigo-600 dark:text-indigo-400 block truncate">
-                      Kelompok: {formatCurrency(kelompok.target_dana)}
-                    </span>
-                  )}
+                  <span className="text-[10px] text-ink-muted dark:text-ink-muted-dark block truncate">
+                    Sisa: {formatCurrency(skema.sisaTarget)}
+                  </span>
                 </div>
                 <div className="col-span-2 rounded-xl border border-emerald-500/20 bg-emerald-50/40 dark:bg-emerald-950/20 p-2.5 flex items-center justify-between">
-                  <span className="text-xs text-ink-muted dark:text-ink-muted-dark">
-                    Cicilan Ideal ({skema.labelPeriode}):
+                  <span className="text-xs font-medium text-ink-muted dark:text-ink-muted-dark">
+                    Setoran {skema.periode === 'mingguan' ? 'Mingguan' : 'Bulanan'} Tetap:
                   </span>
-                  <span className="font-bold text-sm text-ink dark:text-ink-dark">
+                  <span className="font-extrabold text-sm text-emerald-700 dark:text-emerald-400">
                     {formatCurrency(skema.nominalPerPeriode)}{' '}
                     <span className="text-xs font-normal text-ink-muted">/{skema.labelPeriode}</span>
                   </span>
@@ -136,7 +136,7 @@ export default function TabunganTable({
                         periode: skema.periode,
                         lamaBulan: skema.lamaBulan,
                         saldo: t.saldo,
-                        target: t.target,
+                        target: effectiveTarget,
                         rekeningInstansi,
                         jenisPesan: 'rutin',
                       })
@@ -183,12 +183,14 @@ export default function TabunganTable({
           </thead>
           <tbody className="divide-y divide-border dark:divide-border-dark">
             {data.map((t) => {
-              const persentase = t.target > 0 ? Math.min(100, Math.round((t.saldo / t.target) * 100)) : 0
+              const effectiveTarget = resolveEffectiveTarget(t)
+              const persentase =
+                effectiveTarget > 0 ? Math.min(100, Math.round(((t.saldo || 0) / effectiveTarget) * 100)) : 0
               const skema = calculateSkemaTabungan({
-                target: t.target || 3000000,
+                target: effectiveTarget,
                 saldo: t.saldo || 0,
                 periode: t.periode_setoran || t.anggota?.periode_setoran || 'bulanan',
-                lamaBulan: t.lama_tabungan || t.anggota?.lama_tabungan || 12,
+                lamaBulan: t.lama_tabungan || t.anggota?.lama_tabungan || 10,
               })
               const canEdit = isAdmin || (currentAnggotaId && t.anggota_id === currentAnggotaId)
               const kelompok = t.anggota?.kelompok
@@ -226,23 +228,26 @@ export default function TabunganTable({
                     </p>
                   </td>
                   <td className="py-3 pr-4">
-                    <p className="font-bold text-ink dark:text-ink-dark whitespace-nowrap">
+                    <p className="font-extrabold text-emerald-700 dark:text-emerald-400 whitespace-nowrap">
                       {formatCurrency(skema.nominalPerPeriode)}
                       <span className="text-xs font-normal text-ink-muted dark:text-ink-muted-dark">
                         {' '}/ {skema.labelPeriode}
                       </span>
+                    </p>
+                    <p className="text-[10px] text-ink-muted dark:text-ink-muted-dark whitespace-nowrap">
+                      {skema.periode === 'mingguan'
+                        ? `Bulanan: ${formatCurrency(skema.nominalBulanan)}/bln`
+                        : `Mingguan: ${formatCurrency(skema.nominalMingguan)}/mgg`}
                     </p>
                   </td>
                   <td className="py-3 pr-4 font-bold text-emerald-600 dark:text-emerald-400 whitespace-nowrap">
                     {formatCurrency(t.saldo)}
                   </td>
                   <td className="py-3 pr-4 whitespace-nowrap">
-                    <p className="font-bold text-ink dark:text-ink-dark">{formatCurrency(t.target)}</p>
-                    {kelompok?.target_dana && (
-                      <p className="text-[10px] text-indigo-600 dark:text-indigo-400">
-                        Klp: {formatCurrency(kelompok.target_dana)}
-                      </p>
-                    )}
+                    <p className="font-bold text-ink dark:text-ink-dark">{formatCurrency(effectiveTarget)}</p>
+                    <p className="text-[10px] text-ink-muted dark:text-ink-muted-dark">
+                      Sisa: {formatCurrency(skema.sisaTarget)}
+                    </p>
                   </td>
                   <td className="py-3 pr-4">
                     <div className="flex items-center gap-2">
@@ -275,7 +280,7 @@ export default function TabunganTable({
                               periode: skema.periode,
                               lamaBulan: skema.lamaBulan,
                               saldo: t.saldo,
-                              target: t.target,
+                              target: effectiveTarget,
                               rekeningInstansi,
                               jenisPesan: 'rutin',
                             })

@@ -5,7 +5,7 @@ import { CalendarClock, Sparkles } from 'lucide-react'
 import { setoranSchema } from '../../validations/transaksiValidation'
 import { useAnggotaSelect } from '../../hooks/useAnggota'
 import { uploadBuktiTransaksi } from '../../repositories/transaksiRepository'
-import { formatCurrency, calculateSkemaTabungan } from '../../utils/formatCurrency'
+import { formatCurrency, calculateSkemaTabungan, resolveEffectiveTarget } from '../../utils/formatCurrency'
 import Input from '../ui/Input'
 import Select from '../ui/Select'
 import Button from '../ui/Button'
@@ -40,10 +40,10 @@ export default function SetoranForm({ onSubmit, defaultAnggotaId, loading }) {
     const found = (anggotaList ?? []).find((a) => a.id === selectedAnggotaId)
     if (!found) return null
     const rawTb = Array.isArray(found.tabungan) ? found.tabungan[0] : found.tabungan
-    const target = Number(rawTb?.target || 3000000)
+    const target = resolveEffectiveTarget(found)
     const saldo = Number(rawTb?.saldo || 0)
     const periode = found.periode_setoran || rawTb?.periode_setoran || 'bulanan'
-    const lamaBulan = Number(found.lama_tabungan || rawTb?.lama_tabungan || 12)
+    const lamaBulan = Number(found.lama_tabungan || rawTb?.lama_tabungan || 10)
     return {
       anggota: found,
       ...calculateSkemaTabungan({
@@ -85,7 +85,7 @@ export default function SetoranForm({ onSubmit, defaultAnggotaId, loading }) {
             options={(anggotaList ?? []).map((a) => {
               const tb = Array.isArray(a.tabungan) ? a.tabungan[0] : a.tabungan
               const per = a.periode_setoran || tb?.periode_setoran || 'bulanan'
-              const lama = Number(a.lama_tabungan || tb?.lama_tabungan || 12)
+              const lama = Number(a.lama_tabungan || tb?.lama_tabungan || 10)
               return {
                 value: a.id,
                 label: `${a.nama} — ${a.kode_anggota} (${per === 'mingguan' ? 'Mingguan' : 'Bulanan'} • ${lama} Bln)`,

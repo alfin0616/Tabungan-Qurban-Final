@@ -90,25 +90,53 @@ export const LAMA_TABUNGAN_PRESETS = [
 ]
 
 /**
- * Menghitung estimasi setoran per periode (bulanan / mingguan) berdasarkan
- * target tabungan per anggota, saldo terkumpul, dan lama tabungan (bulan).
+ * Menentukan target tabungan efektif per anggota (dari record tabungan atau kuota kelompok).
+ */
+export function resolveEffectiveTarget(row, fallback = 3000000) {
+  if (!row) return fallback
+  const tb = Array.isArray(row.tabungan) ? row.tabungan[0] : row.tabungan
+  const direct = Number(row.target ?? tb?.target ?? 0)
+  if (direct > 0) return direct
+
+  const klp = row.kelompok || row.anggota?.kelompok || tb?.kelompok
+  const totalKelompok = Number(klp?.target_dana || 0)
+  if (totalKelompok > 0) {
+    const kuota = Number(klp?.maksimal_anggota || (klp?.jenis_qurban === 'kambing' ? 1 : 7))
+    return kuota > 1 && totalKelompok >= 7000000 ? Math.ceil(totalKelompok / kuota) : totalKelompok
+  }
+
+  return fallback
+}
+
+/**
+ * Menghitung nominal setoran tetap per periode (bulanan / mingguan) berdasarkan
+ * total target tabungan yang harus dilunasi dan lama tabungan (bulan).
+ * Nominal bulanan dan mingguan TETAP (tidak berubah/menyusut saat saldo bertambah).
+ * Contoh: Target Rp 4.000.000 selama 10 bulan -> Bulanan tetap Rp 400.000, Mingguan tetap Rp 100.000.
  */
 export function calculateSkemaTabungan({
   target = 3000000,
   saldo = 0,
   periode = 'bulanan',
-  lamaBulan = 12,
+  lamaBulan = 10,
 } = {}) {
   const cleanTarget = Math.max(0, Number(target) || 3000000)
   const cleanSaldo = Math.max(0, Number(saldo) || 0)
   const sisaTarget = Math.max(0, cleanTarget - cleanSaldo)
-  const durasiBulan = Math.max(1, Number(lamaBulan) || 12)
+  const durasiBulan = Math.max(1, Number(lamaBulan) || 10)
   const totalMinggu = durasiBulan * 4
 
-  const dasarHitung = sisaTarget > 0 ? sisaTarget : cleanTarget
+  // Selalu gunakan cleanTarget (total target pelunasan) agar nominal bulanan & mingguan
+  // tetap konsisten sesuai pilihan skema dan tidak berubah saat ada setoran masuk.
+  const dasarHitung = cleanTarget
   const nominalBulanan = Math.ceil(dasarHitung / durasiBulan)
   const nominalMingguan = Math.ceil(dasarHitung / totalMinggu)
   const isMingguan = periode === 'mingguan'
+  const nominalPerPeriode = isMingguan ? nominalMingguan : nominalBulanan
+  const totalPeriode = isMingguan ? totalMinggu : durasiBulan
+  const periodeTerbayar =
+    nominalPerPeriode > 0 ? Math.min(totalPeriode, Math.floor(cleanSaldo / nominalPerPeriode)) : 0
+  const sisaPeriode = Math.max(0, totalPeriode - periodeTerbayar)
 
   return {
     target: cleanTarget,
@@ -116,10 +144,13 @@ export function calculateSkemaTabungan({
     sisaTarget,
     periode: isMingguan ? 'mingguan' : 'bulanan',
     lamaBulan: durasiBulan,
-    totalPeriode: isMingguan ? totalMinggu : durasiBulan,
-    nominalPerPeriode: isMingguan ? nominalMingguan : nominalBulanan,
+    totalMinggu,
+    totalPeriode,
+    nominalPerPeriode,
     nominalBulanan,
     nominalMingguan,
     labelPeriode: isMingguan ? 'minggu' : 'bulan',
+    periodeTerbayar,
+    sisaPeriode,
   }
 }

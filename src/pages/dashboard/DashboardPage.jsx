@@ -79,17 +79,22 @@ export default function DashboardPage() {
   const { data: grafik, isLoading: loadingGrafik } = useGrafikSetoran(periodeGrafik)
   const { data: riwayatData, isLoading: loadingRiwayat } = useRiwayatTransaksi({ page: 1, limit: 5 })
 
-  const displayName = profile?.nama || user?.user_metadata?.nama || (isAdmin ? 'Admin Instansi' : 'Jamaah')
+  const displayName =
+    profile?.nama ||
+    profile?.full_name ||
+    user?.user_metadata?.full_name ||
+    user?.user_metadata?.nama ||
+    (isAdmin ? 'Admin Instansi' : 'Jamaah')
   const instansiName = instansiSaya?.nama_instansi || (isAdmin ? 'Admin Panel Instansi' : 'Jamaah Tabungan Qurban')
 
   const recentTransactions = Array.isArray(riwayatData?.data) ? riwayatData.data.slice(0, 5) : []
 
   return (
-    <div className="space-y-5 sm:space-y-6">
-      {/* ── 1. GREETING HEADER MOBILE (< 768px): Minimalis Sesuai Contoh App ── */}
-      <div className="flex md:hidden items-center justify-between pt-1">
-        <div className="min-w-0 pr-3">
-          <h1 className="text-xl font-extrabold text-ink dark:text-white tracking-tight truncate">
+    <div className="space-y-4 sm:space-y-6 min-w-0 max-w-full">
+      {/* ── 1. GREETING HEADER MOBILE (< 768px): Minimalis & Tidak Terpotong ── */}
+      <div className="flex md:hidden items-center justify-between gap-3 rounded-2xl border border-border/80 dark:border-border-dark bg-surface dark:bg-surface-dark p-3.5 shadow-2xs">
+        <div className="min-w-0 flex-1">
+          <h1 className="text-base sm:text-lg font-extrabold text-ink dark:text-white tracking-tight truncate">
             Halo, {displayName}
           </h1>
           <p className="text-xs text-ink-muted dark:text-ink-muted-dark font-medium truncate mt-0.5">
@@ -101,7 +106,7 @@ export default function DashboardPage() {
           title="Buka Profil"
           className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-950/60 ring-2 ring-emerald-500/20 shadow-xs active:scale-95 transition-transform"
         >
-          <Avatar src={profile?.foto} name={displayName} size={38} />
+          <Avatar src={profile?.foto || profile?.avatar_url} name={displayName} size={36} />
         </Link>
       </div>
 

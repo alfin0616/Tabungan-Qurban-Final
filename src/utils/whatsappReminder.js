@@ -51,7 +51,7 @@ export function buildPaymentReminderMessage({
   namaInstansi = 'Masjid / Instansi Qurban',
   namaKelompok = '',
   periode = 'bulanan',
-  lamaBulan = 12,
+  lamaBulan = 10,
   saldo = 0,
   target = 3000000,
   bulanTelat = 1,
@@ -62,7 +62,7 @@ export function buildPaymentReminderMessage({
     target: Number(target) || 3000000,
     saldo: Number(saldo) || 0,
     periode: periode || 'bulanan',
-    lamaBulan: Number(lamaBulan) || 12,
+    lamaBulan: Number(lamaBulan) || 10,
   })
 
   const persentase =
@@ -70,6 +70,7 @@ export function buildPaymentReminderMessage({
 
   const kodeLabel = kodeAnggota ? ` (${kodeAnggota})` : ''
   const kelompokLine = namaKelompok ? `\nKelompok: *${namaKelompok}*` : ''
+  const labelSkema = skema.periode === 'mingguan' ? 'Mingguan' : 'Bulanan'
 
   // Blok informasi rekening instansi jika tersedia
   const namaBank = rekeningInstansi?.nama_bank || ''
@@ -82,25 +83,29 @@ export function buildPaymentReminderMessage({
 
   if (jenisPesan === 'telat') {
     const jumlahTelat = Math.max(1, Number(bulanTelat) || 1)
-    const nominalTertunda = skema.nominalPerPeriode * jumlahTelat
+    const rawTertunda = skema.nominalPerPeriode * jumlahTelat
+    const nominalTertunda =
+      skema.sisaTarget > 0 ? Math.min(rawTertunda, skema.sisaTarget) : rawTertunda
     const tenorDiperpanjang = skema.lamaBulan + jumlahTelat
 
     return (
       `Assalamu'alaikum Warahmatullahi Wabarakatuh,\n` +
       `Yth. Bapak/Ibu *${nama}*${kodeLabel}\n` +
       `Jamaah Tabungan Qurban *${namaInstansi}*${kelompokLine}\n\n` +
-      `Mengingatkan dengan hormat bahwa setoran Tabungan Qurban Bapak/Ibu tercatat belum masuk selama *${jumlahTelat} ${skema.labelPeriode}* (estimasi tertunda: *${formatCurrency(nominalTertunda)}*).\n\n` +
-      `📊 *Rincian Tabungan Saat Ini:*\n` +
-      `• Skema Aktif: *Setoran ${skema.periode === 'mingguan' ? 'Mingguan' : 'Bulanan'} (${skema.lamaBulan} Bulan)*\n` +
-      `• Cicilan Rutin: *${formatCurrency(skema.nominalPerPeriode)} / ${skema.labelPeriode}*\n` +
+      `Mengingatkan dengan hormat bahwa setoran Tabungan Qurban Bapak/Ibu tercatat belum masuk selama *${jumlahTelat} ${skema.labelPeriode}*.\n\n` +
+      `📋 *Rincian Tagihan & Tabungan:*\n` +
+      `• Pilihan Skema: *Setoran ${labelSkema} (${skema.lamaBulan} Bulan / ${skema.totalPeriode}x ${skema.labelPeriode})*\n` +
+      `• Nominal Setoran ${labelSkema}: *${formatCurrency(skema.nominalPerPeriode)} / ${skema.labelPeriode}*\n` +
+      `• Total Tagihan (${jumlahTelat}x ${skema.labelPeriode}): *${formatCurrency(nominalTertunda)}*\n` +
+      `• Total Target Tabungan: *${formatCurrency(skema.target)}*\n` +
       `• Saldo Terkumpul: *${formatCurrency(skema.saldo)}* (${persentase}%)\n` +
-      `• Sisa Target: *${formatCurrency(skema.sisaTarget)}*\n\n` +
-      `✅ *Opsi Penanganan Fleksibel (Tanpa Denda & Tanpa Hangus):*\n` +
-      `1. *Rapel Setoran*: Menyetor *${formatCurrency(nominalTertunda)}* untuk mengejar ${jumlahTelat} ${skema.labelPeriode} yang tertunda.\n` +
-      `2. *Perpanjang Lama Tabungan*: Menambah durasi tabungan menjadi *${tenorDiperpanjang} Bulan* (atau hingga 24–30 bulan) agar cicilan tetap ringan.\n` +
-      `3. *Ubah ke Setoran Mingguan*: Mencicil ringan *${formatCurrency(skema.nominalMingguan)} / minggu*.` +
+      `• Sisa Pelunasan: *${formatCurrency(skema.sisaTarget)}*\n\n` +
+      `✅ *Opsi Pembayaran Fleksibel (Tanpa Denda & Tanpa Hangus):*\n` +
+      `1. *Setor Rutin 1x*: *${formatCurrency(skema.nominalPerPeriode)} / ${skema.labelPeriode}*\n` +
+      `2. *Rapel ${jumlahTelat}x ${skema.labelPeriode}*: *${formatCurrency(nominalTertunda)}*\n` +
+      `3. *Perpanjang Tenor*: Tambah menjadi *${tenorDiperpanjang} Bulan* atau pilih skema *Mingguan (${formatCurrency(skema.nominalMingguan)} / minggu)*` +
       `${rekeningBlock}\n\n` +
-      `Silakan balas pesan ini untuk konfirmasi setoran atau penyesuaian lama tabungan. Jazakumullahu Khairan Katsiran.`
+      `Silakan balas pesan ini untuk konfirmasi pembayaran. Terima kasih, Jazakumullahu Khairan Katsiran.`
     )
   }
 
@@ -109,29 +114,32 @@ export function buildPaymentReminderMessage({
       `Assalamu'alaikum Warahmatullahi Wabarakatuh,\n` +
       `Yth. Bapak/Ibu *${nama}*${kodeLabel}\n` +
       `Jamaah Tabungan Qurban *${namaInstansi}*${kelompokLine}\n\n` +
-      `Berikut kami sampaikan informasi terbaru progres Tabungan Qurban Bapak/Ibu:\n` +
+      `Berikut kami sampaikan informasi progres Tabungan Qurban Bapak/Ibu:\n\n` +
+      `📊 *Ringkasan Tabungan Qurban:*\n` +
+      `• Total Target Tabungan: *${formatCurrency(skema.target)}*\n` +
       `• Saldo Terkumpul: *${formatCurrency(skema.saldo)}* (${persentase}%)\n` +
-      `• Target Qurban: *${formatCurrency(skema.target)}*\n` +
-      `• Sisa Target: *${formatCurrency(skema.sisaTarget)}*\n` +
-      `• Rencana Setoran: *${formatCurrency(skema.nominalPerPeriode)} / ${skema.labelPeriode}* (Tenor ${skema.lamaBulan} Bulan)` +
+      `• Sisa Pelunasan: *${formatCurrency(skema.sisaTarget)}*\n` +
+      `• Skema Pilihan: *Setoran ${labelSkema} (${skema.lamaBulan} Bulan)*\n` +
+      `• Nominal Setoran ${labelSkema}: *${formatCurrency(skema.nominalPerPeriode)} / ${skema.labelPeriode}*` +
       `${rekeningBlock}\n\n` +
       `Semoga Allah SWT memudahkan langkah Bapak/Ibu dalam menunaikan ibadah qurban. Aamiin.`
     )
   }
 
-  // Default: 'rutin' (Pengingat Pembayaran Periode Berjalan)
+  // Default: 'rutin' (Pengingat Pembayaran Sesuai Skema Bulanan / Mingguan)
   return (
     `Assalamu'alaikum Warahmatullahi Wabarakatuh,\n` +
     `Yth. Bapak/Ibu *${nama}*${kodeLabel}\n` +
     `Jamaah Tabungan Qurban *${namaInstansi}*${kelompokLine}\n\n` +
-    `Mengingatkan dengan hormat jadwal pembayaran setoran rutin Tabungan Qurban periode ini:\n` +
-    `• Skema Setoran: *${skema.periode === 'mingguan' ? 'Mingguan' : 'Bulanan'} (${skema.lamaBulan} Bulan)*\n` +
-    `• Nominal Setoran Rutin: *${formatCurrency(skema.nominalPerPeriode)} / ${skema.labelPeriode}*\n` +
+    `Mengingatkan dengan hormat jadwal pembayaran setoran Tabungan Qurban Bapak/Ibu:\n\n` +
+    `📋 *Rincian Tagihan Setoran ${labelSkema}:*\n` +
+    `• Pilihan Skema: *Setoran ${labelSkema} (${skema.lamaBulan} Bulan / ${skema.totalPeriode}x ${skema.labelPeriode})*\n` +
+    `• Nominal Tagihan ${labelSkema}: *${formatCurrency(skema.nominalPerPeriode)} / ${skema.labelPeriode}*\n` +
+    `• Total Target Tabungan: *${formatCurrency(skema.target)}*\n` +
     `• Saldo Terkumpul: *${formatCurrency(skema.saldo)}* (${persentase}%)\n` +
-    `• Target Tabungan: *${formatCurrency(skema.target)}* (Sisa: *${formatCurrency(skema.sisaTarget)}*)` +
+    `• Sisa Pelunasan: *${formatCurrency(skema.sisaTarget)}*` +
     `${rekeningBlock}\n\n` +
-    `Catatan: Tabungan bersifat fleksibel & tanpa batas waktu hangus. Apabila Bapak/Ibu ingin menyesuaikan lama tabungan (misal 24 atau 30 bulan), silakan informasikan kepada pengurus.\n\n` +
-    `Terima kasih. Jazakumullahu Khairan Katsiran.`
+    `Terima kasih atas perhatian dan kerja samanya. Jazakumullahu Khairan Katsiran.`
   )
 }
 

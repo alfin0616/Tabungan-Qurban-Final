@@ -21,7 +21,7 @@ import Badge from '../ui/Badge'
 export default function AiInsightCard({ instansiId = null, kelompokId = null }) {
   const { data } = useAiInsight({ instansiId, kelompokId })
   const [periodeSimulasi, setPeriodeSimulasi] = useState('bulanan')
-  const [lamaSimulasi, setLamaSimulasi] = useState(12)
+  const [lamaSimulasi, setLamaSimulasi] = useState(10)
 
   const keaktifanPct = data?.keaktifan_pct ?? 100
   const trendPct = data?.trend_pct || 0
@@ -54,7 +54,7 @@ export default function AiInsightCard({ instansiId = null, kelompokId = null }) 
   )
 
   return (
-    <div className="relative overflow-hidden rounded-3xl border border-emerald-500/30 bg-gradient-to-br from-emerald-900/95 via-emerald-950/95 to-slate-950 p-6 text-white shadow-2xl backdrop-blur-md">
+    <div className="hidden md:block relative overflow-hidden rounded-3xl border border-emerald-500/30 bg-gradient-to-br from-emerald-900/95 via-emerald-950/95 to-slate-950 p-6 text-white shadow-2xl backdrop-blur-md">
       {/* Background Decorative Glow */}
       <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-emerald-500/10 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-10 -left-10 h-40 w-40 rounded-full bg-teal-500/10 blur-3xl" />

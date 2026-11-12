@@ -9,7 +9,7 @@ import Avatar from '../../components/ui/Avatar'
 import Badge from '../../components/ui/Badge'
 import Spinner from '../../components/ui/Spinner'
 import EmptyState from '../../components/ui/EmptyState'
-import { formatCurrency, calculateSkemaTabungan } from '../../utils/formatCurrency'
+import { formatCurrency, calculateSkemaTabungan, resolveEffectiveTarget } from '../../utils/formatCurrency'
 import { formatDate } from '../../utils/formatDate'
 import { sendDirectWhatsAppReminder } from '../../utils/whatsappReminder'
 
@@ -34,14 +34,15 @@ export default function AnggotaDetailPage() {
     return <EmptyState title="Anggota tidak ditemukan" />
   }
 
+  const effectiveTarget = resolveEffectiveTarget({ ...anggota, tabungan })
   const persentase =
-    tabungan?.target > 0 ? Math.min(100, Math.round((tabungan.saldo / tabungan.target) * 100)) : 0
+    effectiveTarget > 0 ? Math.min(100, Math.round(((tabungan?.saldo || 0) / effectiveTarget) * 100)) : 0
 
   const skema = calculateSkemaTabungan({
-    target: tabungan?.target || 3000000,
+    target: effectiveTarget,
     saldo: tabungan?.saldo || 0,
     periode: tabungan?.periode_setoran || anggota?.periode_setoran || 'bulanan',
-    lamaBulan: tabungan?.lama_tabungan || anggota?.lama_tabungan || 12,
+    lamaBulan: tabungan?.lama_tabungan || anggota?.lama_tabungan || 10,
   })
 
   return (
@@ -102,7 +103,7 @@ export default function AnggotaDetailPage() {
             <div>
               <p className="text-sm text-ink-muted dark:text-ink-muted-dark">Target Qurban</p>
               <p className="text-xl font-bold text-ink dark:text-ink-dark">
-                {loadingTabungan ? '—' : `${formatCurrency(tabungan?.target)} (${persentase}%)`}
+                {loadingTabungan ? '—' : `${formatCurrency(effectiveTarget)} (${persentase}%)`}
               </p>
             </div>
           </div>
@@ -188,7 +189,7 @@ export default function AnggotaDetailPage() {
                 periode: skema.periode,
                 lamaBulan: skema.lamaBulan,
                 saldo: tabungan?.saldo || 0,
-                target: tabungan?.target || 3000000,
+                target: effectiveTarget,
                 rekeningInstansi: instansiSaya,
                 jenisPesan: 'rutin',
               })

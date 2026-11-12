@@ -27,10 +27,10 @@ export default function AnggotaForm({ defaultValues, anggotaId, onSubmit, onCanc
 
   const [uploading, setUploading] = useState(false)
   const [previewUrl, setPreviewUrl] = useState(defaultValues?.foto ?? null)
-  const initialLama = Number(defaultValues?.lama_tabungan || 12)
+  const initialLama = Number(defaultValues?.lama_tabungan || 10)
   const isPresetInit = LAMA_TABUNGAN_PRESETS.some((p) => p.value === initialLama)
   const [customMode, setCustomMode] = useState(!isPresetInit)
-  const [bulanMulai, setBulanMulai] = useState(initialLama === 10 ? 7 : 5)
+  const [bulanMulai, setBulanMulai] = useState(initialLama === 12 ? 5 : 7)
   const [bulanSelesai, setBulanSelesai] = useState(4)
 
   const {

@@ -17,13 +17,14 @@ import {
 import { useTabunganList } from '../../hooks/useTabungan'
 import { useAnggotaBelumSetor } from '../../hooks/useTransaksi'
 import { useAuth } from '../../context/AuthContext'
-import { enrichRowWithSkema } from '../../repositories/tabunganRepository'
+import { enrichRowWithSkema, saveLocalSkema, updateTargetTabungan } from '../../repositories/tabunganRepository'
+import { useQueryClient } from '@tanstack/react-query'
 import { Card, CardHeader, CardTitle } from '../ui/Card'
 import Modal from '../modal/Modal'
 import Button from '../ui/Button'
 import Spinner from '../ui/Spinner'
 import EmptyState from '../ui/EmptyState'
-import { formatCurrency, calculateSkemaTabungan } from '../../utils/formatCurrency'
+import { formatCurrency, calculateSkemaTabungan, resolveEffectiveTarget } from '../../utils/formatCurrency'
 import {
   buildPaymentReminderMessage,
   sendDirectWhatsAppReminder,
@@ -32,11 +33,12 @@ import {
 } from '../../utils/whatsappReminder'
 
 export default function WaPaymentReminderCard() {
+  const queryClient = useQueryClient()
   const { isAdmin, isSuperAdmin, instansiSaya } = useAuth()
   const { data: tabunganList, isLoading: loadingTabungan } = useTabunganList()
   const { data: belumSetorList, isLoading: loadingBelumSetor } = useAnggotaBelumSetor()
 
-  const [filterMode, setFilterMode] = useState('belum_setor') // 'belum_setor' | 'belum_lunas' | 'bulanan' | 'mingguan'
+  const [filterMode, setFilterMode] = useState('belum_lunas') // 'belum_setor' | 'belum_lunas' | 'bulanan' | 'mingguan'
   const [jenisPesan, setJenisPesan] = useState('rutin') // 'rutin' | 'telat' | 'progres'
   const [bulanTelat, setBulanTelat] = useState(2)
   const [search, setSearch] = useState('')
@@ -61,13 +63,14 @@ export default function WaPaymentReminderCard() {
       seenAnggotaIds.add(anggotaId)
 
       const periode = tb.periode_setoran || anggota.periode_setoran || 'bulanan'
-      const lamaBulan = Number(tb.lama_tabungan || anggota.lama_tabungan || 12)
+      const lamaBulan = Number(tb.lama_tabungan || anggota.lama_tabungan || 10)
       const saldo = Number(tb.saldo || 0)
-      const target = Number(tb.target || 3000000)
+      const target = resolveEffectiveTarget(tb)
       const skema = calculateSkemaTabungan({ target, saldo, periode, lamaBulan })
 
       rows.push({
         id: tb.id,
+        tabunganId: tb.id,
         anggotaId,
         nama: anggota.nama || 'Jamaah Qurban',
         kodeAnggota: anggota.kode_anggota || '',
@@ -80,9 +83,12 @@ export default function WaPaymentReminderCard() {
         namaKelompok: anggota.kelompok?.nama_kelompok || '',
         periode: skema.periode,
         lamaBulan: skema.lamaBulan,
+        totalPeriode: skema.totalPeriode,
         saldo,
         target,
         sisaTarget: skema.sisaTarget,
+        nominalBulanan: skema.nominalBulanan,
+        nominalMingguan: skema.nominalMingguan,
         nominalPerPeriode: skema.nominalPerPeriode,
         labelPeriode: skema.labelPeriode,
         belumSetorBulanIni: belumSetorIds.has(anggotaId) || saldo === 0,
@@ -95,13 +101,14 @@ export default function WaPaymentReminderCard() {
       const a = enrichRowWithSkema(rawA)
       if (!a.id || seenAnggotaIds.has(a.id)) continue
       const periode = a.periode_setoran || 'bulanan'
-      const lamaBulan = Number(a.lama_tabungan || 12)
+      const lamaBulan = Number(a.lama_tabungan || 10)
       const saldo = 0
-      const target = 3000000
+      const target = resolveEffectiveTarget(a)
       const skema = calculateSkemaTabungan({ target, saldo, periode, lamaBulan })
 
       rows.push({
         id: `bs-${a.id}`,
+        tabunganId: null,
         anggotaId: a.id,
         nama: a.nama || 'Jamaah Qurban',
         kodeAnggota: a.kode_anggota || '',
@@ -111,9 +118,12 @@ export default function WaPaymentReminderCard() {
         namaKelompok: '',
         periode: skema.periode,
         lamaBulan: skema.lamaBulan,
+        totalPeriode: skema.totalPeriode,
         saldo,
         target,
         sisaTarget: skema.sisaTarget,
+        nominalBulanan: skema.nominalBulanan,
+        nominalMingguan: skema.nominalMingguan,
         nominalPerPeriode: skema.nominalPerPeriode,
         labelPeriode: skema.labelPeriode,
         belumSetorBulanIni: true,
@@ -123,6 +133,28 @@ export default function WaPaymentReminderCard() {
 
     return rows.filter((r) => r.statusAktif)
   }, [tabunganList, belumSetorList, belumSetorIds, instansiSaya])
+
+  async function handleQuickSwitchPeriode(item, nextPeriode) {
+    if (!item?.anggotaId || item.periode === nextPeriode) return
+    saveLocalSkema(item.anggotaId, {
+      periode_setoran: nextPeriode,
+      lama_tabungan: item.lamaBulan,
+      explicit: true,
+    })
+    if (item.tabunganId) {
+      try {
+        await updateTargetTabungan(item.tabunganId, item.target, {
+          anggota_id: item.anggotaId,
+          periode_setoran: nextPeriode,
+          lama_tabungan: item.lamaBulan,
+        })
+      } catch {
+        // local skema already saved
+      }
+    }
+    queryClient.invalidateQueries({ queryKey: ['tabungan'] })
+    queryClient.invalidateQueries({ queryKey: ['anggota'] })
+  }
 
   const filteredRows = useMemo(() => {
     return normalizedRows.filter((r) => {
@@ -226,8 +258,8 @@ export default function WaPaymentReminderCard() {
         </div>
       </CardHeader>
 
-      {/* Panduan 3 Solusi Penanganan Jamaah Telat Bayar */}
-      <div className="mb-4 grid grid-cols-1 gap-3 rounded-2xl border border-emerald-500/25 bg-emerald-50/50 dark:bg-emerald-950/25 p-4 md:grid-cols-3">
+      {/* Panduan 3 Solusi Penanganan Jamaah Telat Bayar (Tampil di Desktop agar Mobile Minimalis) */}
+      <div className="mb-4 hidden md:grid grid-cols-1 gap-3 rounded-2xl border border-emerald-500/25 bg-emerald-50/50 dark:bg-emerald-950/25 p-4 md:grid-cols-3">
         <div className="flex items-start gap-2.5">
           <ShieldCheck className="h-5 w-5 shrink-0 text-emerald-600 dark:text-emerald-400 mt-0.5" />
           <div>
@@ -266,12 +298,12 @@ export default function WaPaymentReminderCard() {
       </div>
 
       {/* Toolbar Filter, Pencarian & Template Pesan WA */}
-      <div className="mb-4 flex flex-col gap-3 rounded-2xl border border-border dark:border-border-dark bg-bg/60 dark:bg-bg-dark/60 p-3.5 lg:flex-row lg:items-center lg:justify-between">
+      <div className="mb-4 flex flex-col gap-3 rounded-2xl border border-border dark:border-border-dark bg-bg/60 dark:bg-bg-dark/60 p-3 sm:p-3.5 lg:flex-row lg:items-center lg:justify-between">
         {/* Filter Kategori Jamaah */}
         <div className="flex flex-wrap items-center gap-1.5">
           {[
-            { id: 'belum_setor', label: 'Belum Setor Periode Ini' },
             { id: 'belum_lunas', label: 'Semua Belum Lunas' },
+            { id: 'belum_setor', label: 'Belum Setor Periode Ini' },
             { id: 'bulanan', label: 'Skema Bulanan' },
             { id: 'mingguan', label: 'Skema Mingguan' },
           ].map((tab) => (
@@ -353,17 +385,17 @@ export default function WaPaymentReminderCard() {
             const sentToday =
               lastSentIso &&
               new Date(lastSentIso).toDateString() === new Date().toDateString()
-            const nominalDitampilkan =
-              jenisPesan === 'telat'
-                ? item.nominalPerPeriode * bulanTelat
-                : item.nominalPerPeriode
+            const nominalTertunda =
+              item.sisaTarget > 0
+                ? Math.min(item.nominalPerPeriode * bulanTelat, item.sisaTarget)
+                : item.nominalPerPeriode * bulanTelat
 
             return (
               <li
                 key={item.id}
                 className="flex flex-col gap-3 py-3.5 lg:flex-row lg:items-center lg:justify-between"
               >
-                <div className="space-y-1">
+                <div className="space-y-2 min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <Link
                       to={`/anggota/${item.anggotaId}`}
@@ -376,10 +408,45 @@ export default function WaPaymentReminderCard() {
                         ({item.kodeAnggota})
                       </span>
                     )}
-                    <span className="inline-flex items-center gap-1 rounded-md bg-emerald-500/10 px-2 py-0.5 text-[11px] font-bold text-emerald-700 dark:text-emerald-400">
-                      <CalendarClock className="h-3 w-3" />
-                      <span className="capitalize">{item.periode}</span> • {item.lamaBulan} Bulan
+                    {item.namaKelompok && (
+                      <span className="rounded-md bg-indigo-500/10 px-2 py-0.5 text-[11px] font-semibold text-indigo-700 dark:text-indigo-300">
+                        {item.namaKelompok}
+                      </span>
+                    )}
+
+                    {/* Pilihan Cepat Skema Bulanan / Mingguan agar penagihan WA sesuai */}
+                    <div className="inline-flex items-center rounded-lg border border-emerald-500/25 bg-emerald-50/70 dark:bg-emerald-950/30 p-0.5 text-[11px]">
+                      <button
+                        type="button"
+                        onClick={() => handleQuickSwitchPeriode(item, 'bulanan')}
+                        className={`rounded-md px-2 py-0.5 font-bold transition-colors cursor-pointer ${
+                          item.periode === 'bulanan'
+                            ? 'bg-emerald-600 text-white shadow-2xs'
+                            : 'text-emerald-800 dark:text-emerald-300 hover:bg-emerald-100/60'
+                        }`}
+                        title="Gunakan skema Setoran Bulanan"
+                      >
+                        Bulanan ({formatCurrency(item.nominalBulanan)})
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleQuickSwitchPeriode(item, 'mingguan')}
+                        className={`rounded-md px-2 py-0.5 font-bold transition-colors cursor-pointer ${
+                          item.periode === 'mingguan'
+                            ? 'bg-emerald-600 text-white shadow-2xs'
+                            : 'text-emerald-800 dark:text-emerald-300 hover:bg-emerald-100/60'
+                        }`}
+                        title="Gunakan skema Setoran Mingguan"
+                      >
+                        Mingguan ({formatCurrency(item.nominalMingguan)})
+                      </button>
+                    </div>
+
+                    <span className="inline-flex items-center gap-1 rounded-md bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[11px] font-semibold text-ink-muted dark:text-ink-muted-dark">
+                      <CalendarClock className="h-3 w-3 text-emerald-600" />
+                      {item.lamaBulan} Bulan ({item.totalPeriode}x {item.labelPeriode})
                     </span>
+
                     {sentToday && (
                       <span className="inline-flex items-center gap-1 rounded-full bg-emerald-600/15 px-2.5 py-0.5 text-[10px] font-bold text-emerald-700 dark:text-emerald-300">
                         <CheckCircle2 className="h-3 w-3" /> Sudah Diingatkan Hari Ini
@@ -387,7 +454,8 @@ export default function WaPaymentReminderCard() {
                     )}
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-ink-muted dark:text-ink-muted-dark">
+                  {/* Ringkasan Rapi: No WA, Setoran Tetap, Target, Saldo, Sisa Pelunasan */}
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-ink-muted dark:text-ink-muted-dark">
                     <span className="inline-flex items-center gap-1">
                       <Phone className="h-3 w-3 text-emerald-600" />
                       {item.noHp || 'Belum ada No. WA'}
@@ -396,25 +464,38 @@ export default function WaPaymentReminderCard() {
                     <Link
                       to="/tabungan"
                       className="hover:text-emerald-600 transition-colors"
-                      title="Klik untuk masuk ke menu Tabungan"
+                      title="Nominal setoran tetap sesuai pilihan skema"
                     >
-                      Tagihan {jenisPesan === 'telat' ? `(${bulanTelat}x)` : 'Rutin'}:{' '}
+                      Setoran {item.periode === 'mingguan' ? 'Mingguan' : 'Bulanan'}:{' '}
                       <strong className="text-emerald-700 dark:text-emerald-400 underline decoration-emerald-500/40 underline-offset-2">
-                        {formatCurrency(nominalDitampilkan)} / {item.labelPeriode}
+                        {formatCurrency(item.nominalPerPeriode)} / {item.labelPeriode}
                       </strong>
                     </Link>
+
+                    {jenisPesan === 'telat' && (
+                      <span className="text-amber-700 dark:text-amber-300 font-semibold">
+                        Tertunda ({bulanTelat}x): <strong>{formatCurrency(nominalTertunda)}</strong>
+                      </span>
+                    )}
 
                     <Link
                       to="/tabungan"
                       className="hover:text-emerald-600 transition-colors"
                       title="Klik untuk masuk ke menu Tabungan"
                     >
-                      Saldo:{' '}
+                      Target:{' '}
                       <strong className="text-ink dark:text-ink-dark">
+                        {formatCurrency(item.target)}
+                      </strong>
+                    </Link>
+
+                    <span>
+                      Saldo:{' '}
+                      <strong className="text-emerald-600 dark:text-emerald-400">
                         {formatCurrency(item.saldo)}
                       </strong>{' '}
-                      dari {formatCurrency(item.target)}
-                    </Link>
+                      (Sisa: <strong className="text-ink dark:text-ink-dark">{formatCurrency(item.sisaTarget)}</strong>)
+                    </span>
                   </div>
                 </div>
 

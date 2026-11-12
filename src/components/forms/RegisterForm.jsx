@@ -55,7 +55,7 @@ export default function RegisterForm() {
       instansiId: '',
       kelompokId: '',
       periodeSetoran: 'bulanan',
-      lamaTabungan: 12,
+      lamaTabungan: 10,
       email: '',
       password: '',
       confirmPassword: '',

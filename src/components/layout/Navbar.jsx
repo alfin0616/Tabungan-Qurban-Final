@@ -45,33 +45,35 @@ export default function Navbar({ onMenuClick, onToggleCollapsed, collapsed, titl
   }
 
   return (
-    <header className="sticky top-0 z-20 flex h-16 items-center justify-between gap-4 border-b border-border dark:border-border-dark bg-surface/90 dark:bg-surface-dark/90 px-4 backdrop-blur lg:px-6">
-      <div className="flex items-center gap-3">
+    <header className="sticky top-0 z-20 flex h-14 sm:h-16 w-full max-w-full items-center justify-between gap-2 sm:gap-4 border-b border-border dark:border-border-dark bg-surface/95 dark:bg-surface-dark/95 px-3 sm:px-4 backdrop-blur lg:px-6">
+      <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
         {/* Desktop Sidebar Toggle (Perbesar / Perkecil Sidebar) */}
         {onToggleCollapsed && (
           <button
             onClick={onToggleCollapsed}
             title={collapsed ? 'Perbesar Menu Sidebar' : 'Perkecil Menu Sidebar'}
             aria-label={collapsed ? 'Perbesar Menu Sidebar' : 'Perkecil Menu Sidebar'}
-            className="hidden lg:inline-flex rounded-xl p-2 text-ink-muted dark:text-ink-muted-dark hover:bg-emerald-50 hover:text-emerald-800 dark:hover:bg-slate-700 transition-colors"
+            className="hidden lg:inline-flex shrink-0 rounded-xl p-2 text-ink-muted dark:text-ink-muted-dark hover:bg-emerald-50 hover:text-emerald-800 dark:hover:bg-slate-700 transition-colors"
           >
             <Menu className="h-5 w-5" />
           </button>
         )}
 
-        <h1 className="text-base sm:text-lg font-bold text-ink dark:text-ink-dark truncate">{title}</h1>
+        <h1 className="min-w-0 truncate text-sm sm:text-base lg:text-lg font-bold text-ink dark:text-ink-dark">
+          {title}
+        </h1>
       </div>
 
       <div className="hidden flex-1 max-w-sm md:block">
         <SmartSearchInput onSearch={onSearch} />
       </div>
 
-      <div className="flex items-center gap-1.5">
+      <div className="flex shrink-0 items-center gap-1 sm:gap-1.5">
         <button
           onClick={toggleFullscreen}
           title={isFullscreen ? 'Keluar Layar Penuh' : 'Perlebar Layar (Full Screen)'}
           aria-label={isFullscreen ? 'Keluar Layar Penuh' : 'Perlebar Layar (Full Screen)'}
-          className="rounded-full p-2 text-ink-muted dark:text-ink-muted-dark hover:bg-emerald-50 dark:hover:bg-slate-700 transition-colors"
+          className="hidden sm:inline-flex rounded-full p-2 text-ink-muted dark:text-ink-muted-dark hover:bg-emerald-50 dark:hover:bg-slate-700 transition-colors"
         >
           {isFullscreen ? <Minimize2 className="h-5 w-5" /> : <Maximize2 className="h-5 w-5" />}
         </button>
@@ -79,36 +81,40 @@ export default function Navbar({ onMenuClick, onToggleCollapsed, collapsed, titl
         <button
           onClick={toggleTheme}
           aria-label="Ubah mode tampilan"
-          className="rounded-full p-2 text-ink-muted dark:text-ink-muted-dark hover:bg-emerald-50 dark:hover:bg-slate-700"
+          className="rounded-full p-1.5 sm:p-2 text-ink-muted dark:text-ink-muted-dark hover:bg-emerald-50 dark:hover:bg-slate-700"
         >
           {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
         </button>
 
         <NotificationDropdown />
 
-        <div className="relative">
+        <div className="relative shrink-0">
           <button
             onClick={() => setMenuOpen((v) => !v)}
-            className="flex items-center gap-2 rounded-xl px-2 py-1.5 hover:bg-emerald-50 dark:hover:bg-slate-700"
+            className="flex items-center gap-1.5 sm:gap-2 rounded-xl px-1.5 py-1 sm:px-2 sm:py-1.5 hover:bg-emerald-50 dark:hover:bg-slate-700"
           >
-            <Avatar src={profile?.avatar_url} name={profile?.full_name || user?.email} size={32} />
-            <span className="hidden text-sm font-medium text-ink dark:text-ink-dark sm:block">
-              {profile?.full_name || user?.email}
+            <Avatar
+              src={profile?.foto || profile?.avatar_url}
+              name={profile?.nama || profile?.full_name || user?.email}
+              size={30}
+            />
+            <span className="hidden max-w-[130px] truncate text-sm font-medium text-ink dark:text-ink-dark lg:block">
+              {profile?.nama || profile?.full_name || user?.email}
             </span>
             {isSuperAdmin ? (
-              <Badge tone="warning" className="hidden sm:inline-flex">
+              <Badge tone="warning" className="hidden md:inline-flex">
                 Super Admin
               </Badge>
             ) : isAdmin ? (
-              <Badge tone="success" className="hidden sm:inline-flex">
+              <Badge tone="success" className="hidden md:inline-flex">
                 Admin
               </Badge>
             ) : (
-              <Badge tone="info" className="hidden sm:inline-flex">
+              <Badge tone="info" className="hidden md:inline-flex">
                 Jamaah
               </Badge>
             )}
-            <ChevronDown className="h-4 w-4 text-ink-muted dark:text-ink-muted-dark" />
+            <ChevronDown className="hidden sm:block h-4 w-4 shrink-0 text-ink-muted dark:text-ink-muted-dark" />
           </button>
 
           {menuOpen && (

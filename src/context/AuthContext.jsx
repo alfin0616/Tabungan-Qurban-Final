@@ -332,7 +332,7 @@ export function AuthProvider({ children }) {
     instansiId,
     kelompokId,
     periodeSetoran = 'bulanan',
-    lamaTabungan = 12,
+    lamaTabungan = 10,
   }) => {
     const cleanPhone = phone.replace(/[^0-9]/g, '')
     const loginEmail = email && email.includes('@') ? email.trim() : `${cleanPhone}@wa.siqurban.id`
@@ -348,7 +348,7 @@ export function AuthProvider({ children }) {
           instansi_id: instansiId,
           kelompok_id: kelompokId,
           periode_setoran: periodeSetoran,
-          lama_tabungan: Number(lamaTabungan) || 12,
+          lama_tabungan: Number(lamaTabungan) || 10,
         },
       },
     })
@@ -371,13 +371,13 @@ export function AuthProvider({ children }) {
           const { saveLocalSkema } = await import('../repositories/tabunganRepository')
           saveLocalSkema(myAnggota.id, {
             periode_setoran: periodeSetoran,
-            lama_tabungan: Number(lamaTabungan) || 12,
+            lama_tabungan: Number(lamaTabungan) || 10,
           })
           await supabase
             .from('anggota')
             .update({
               periode_setoran: periodeSetoran,
-              lama_tabungan: Number(lamaTabungan) || 12,
+              lama_tabungan: Number(lamaTabungan) || 10,
             })
             .eq('id', myAnggota.id)
             .then(() => {})
@@ -385,7 +385,7 @@ export function AuthProvider({ children }) {
             .from('tabungan')
             .update({
               periode_setoran: periodeSetoran,
-              lama_tabungan: Number(lamaTabungan) || 12,
+              lama_tabungan: Number(lamaTabungan) || 10,
             })
             .eq('anggota_id', myAnggota.id)
             .then(() => {})

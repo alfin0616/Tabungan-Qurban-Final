@@ -1,4 +1,5 @@
 import { supabase } from '../api/supabaseClient'
+import { resolveEffectiveTarget } from '../utils/formatCurrency'
 
 const TABLE = 'tabungan'
 const SKEMA_STORAGE_KEY = 'siqurban_skema_tabungan_map_v1'
@@ -12,13 +13,21 @@ export function getLocalSkemaMap() {
   }
 }
 
-export function saveLocalSkema(anggotaId, { periode_setoran, lama_tabungan } = {}) {
+export function saveLocalSkema(anggotaId, { periode_setoran, lama_tabungan, explicit = true } = {}) {
   if (!anggotaId) return
   try {
     const map = getLocalSkemaMap()
+    const prev = map[anggotaId] || {}
     map[anggotaId] = {
-      periode_setoran: periode_setoran === 'mingguan' ? 'mingguan' : 'bulanan',
-      lama_tabungan: Math.max(1, Number(lama_tabungan) || 12),
+      periode_setoran:
+        periode_setoran === 'mingguan'
+          ? 'mingguan'
+          : periode_setoran === 'bulanan'
+            ? 'bulanan'
+            : prev.periode_setoran || 'bulanan',
+      lama_tabungan: Math.max(1, Number(lama_tabungan || prev.lama_tabungan) || 10),
+      explicit: Boolean(explicit || prev.explicit),
+      updatedAt: Date.now(),
     }
     localStorage.setItem(SKEMA_STORAGE_KEY, JSON.stringify(map))
   } catch {
@@ -34,11 +43,14 @@ export function enrichRowWithSkema(row) {
   const tbRow = Array.isArray(row.tabungan) ? row.tabungan[0] : row.tabungan
 
   // Prioritas penentuan skema:
-  // 1. Data tabungan langsung (karena user mengatur skema di menu Tabungan)
-  // 2. Data anggota langsung
-  // 3. Data di localSkemaMap
-  // 4. Default: bulanan & 12 bulan
+  // 1. Jika user telah menyimpan pilihan skema secara eksplisit (saved.explicit), jaga pilihan tersebut
+  //    agar tidak tertimpa nilai default database (misal jika kolom DB belum di-migrate atau terkena RLS).
+  // 2. Data tabungan langsung
+  // 3. Data anggota langsung
+  // 4. Data di localSkemaMap
+  // 5. Default standar Qurban: bulanan & 10 bulan (misal target 4jt -> 400rb/bulan atau 100rb/minggu)
   const periode_setoran =
+    (saved?.explicit ? saved.periode_setoran : null) ||
     tbRow?.periode_setoran ||
     row.periode_setoran ||
     row.anggota?.periode_setoran ||
@@ -46,16 +58,20 @@ export function enrichRowWithSkema(row) {
     'bulanan'
 
   const lama_tabungan = Number(
-    tbRow?.lama_tabungan ||
+    (saved?.explicit ? saved.lama_tabungan : null) ||
+      tbRow?.lama_tabungan ||
       row.lama_tabungan ||
       row.anggota?.lama_tabungan ||
       saved?.lama_tabungan ||
-      12,
+      10,
   )
+
+  const resolvedTarget = resolveEffectiveTarget(row, Number(row.target ?? tbRow?.target ?? 0))
 
   const enrichedTb = tbRow
     ? {
         ...tbRow,
+        target: Number(tbRow.target) > 0 ? Number(tbRow.target) : resolvedTarget,
         periode_setoran,
         lama_tabungan,
       }
@@ -63,6 +79,9 @@ export function enrichRowWithSkema(row) {
 
   return {
     ...row,
+    ...(row.target !== undefined
+      ? { target: Number(row.target) > 0 ? Number(row.target) : resolvedTarget }
+      : {}),
     periode_setoran,
     lama_tabungan,
     ...(tbRow
@@ -86,25 +105,26 @@ export async function getTabunganList() {
   const { data, error } = await supabase
     .from(TABLE)
     .select(
-      '*, anggota:anggota_id (id, nama, kode_anggota, no_hp, tanggal_bergabung, foto, status, periode_setoran, lama_tabungan, kelompok_id, kelompok:kelompok_id (id, nama_kelompok, target_dana, jenis_qurban, maksimal_anggota))',
+      '*, anggota:anggota_id (*, kelompok:kelompok_id (id, nama_kelompok, target_dana, jenis_qurban, maksimal_anggota))',
     )
     .order('saldo', { ascending: false })
   if (error) throw error
 
-  const mapped = (data || []).map(enrichRowWithSkema)
-
-  // Otomatis sinkronkan local map agar menu lain (seperti Form Setoran) langsung mendapatkan skema terbaru
-  mapped.forEach((t) => {
-    const aid = t.anggota_id || t.anggota?.id
-    if (aid && (t.periode_setoran || t.lama_tabungan)) {
+  const localMap = getLocalSkemaMap()
+  ;(data || []).forEach((rawRow) => {
+    const aid = rawRow.anggota_id || rawRow.anggota?.id
+    const dbPeriode = rawRow.periode_setoran || rawRow.anggota?.periode_setoran
+    const dbLama = rawRow.lama_tabungan || rawRow.anggota?.lama_tabungan
+    if (aid && (dbPeriode || dbLama) && !localMap[aid]?.explicit) {
       saveLocalSkema(aid, {
-        periode_setoran: t.periode_setoran,
-        lama_tabungan: t.lama_tabungan,
+        periode_setoran: dbPeriode || 'bulanan',
+        lama_tabungan: dbLama || 10,
+        explicit: false,
       })
     }
   })
 
-  return mapped
+  return (data || []).map(enrichRowWithSkema)
 }
 
 export async function getTabunganByAnggota(anggotaId) {

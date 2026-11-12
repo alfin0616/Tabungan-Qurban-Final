@@ -60,7 +60,7 @@ export default function DashboardLayout() {
   }
 
   return (
-    <div className="min-h-dvh w-full bg-bg dark:bg-bg-dark">
+    <div className="min-h-dvh w-full max-w-full overflow-x-hidden bg-bg dark:bg-bg-dark">
       <Sidebar
         open={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
@@ -69,7 +69,7 @@ export default function DashboardLayout() {
       />
       <div
         className={cn(
-          'min-h-dvh min-w-0 flex flex-col w-full transition-all duration-300',
+          'min-h-dvh min-w-0 flex flex-col w-full max-w-full transition-all duration-300',
           collapsed ? 'lg:pl-20' : 'lg:pl-64',
         )}
       >
@@ -81,27 +81,27 @@ export default function DashboardLayout() {
           title={resolveTitle(pathname)}
         />
 
-        {/* Argon Extended Gradient Hero Header — Selaras dengan warna Deep Emerald Sidebar */}
-        <div className="relative overflow-hidden bg-gradient-to-r from-emerald-900 via-emerald-800 to-emerald-700 dark:from-emerald-950 dark:via-emerald-900 dark:to-emerald-800 px-4 pt-5 pb-20 lg:px-6 shadow-sm">
+        {/* Argon Gradient Hero Header (Tampil di Desktop, Rapi Tanpa Memotong Konten) */}
+        <div className="relative hidden md:block overflow-hidden bg-gradient-to-r from-emerald-900 via-emerald-800 to-emerald-700 dark:from-emerald-950 dark:via-emerald-900 dark:to-emerald-800 px-4 py-4 lg:px-6 lg:py-5 shadow-sm">
           <div className="pointer-events-none absolute inset-0 overflow-hidden">
             <div className="absolute -top-16 -right-16 h-56 w-56 rounded-full bg-white/10 blur-2xl" />
             <div className="absolute bottom-0 left-1/4 h-40 w-40 rounded-full bg-black/10 blur-xl" />
           </div>
           <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-0.5 min-w-0">
               <div className="flex items-center gap-2 text-xs font-medium text-emerald-100/90">
                 <span>SIQURBAN</span>
                 <span>/</span>
-                <span className="font-semibold text-white">{resolveTitle(pathname)}</span>
+                <span className="font-semibold text-white truncate">{resolveTitle(pathname)}</span>
               </div>
-              <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
+              <h2 className="text-xl lg:text-2xl font-bold tracking-tight text-white truncate">
                 {resolveTitle(pathname)}
               </h2>
             </div>
 
             {isSuperAdmin ? (
-              <div className="inline-flex items-center gap-2 self-start sm:self-auto rounded-xl bg-white/15 backdrop-blur-xs border border-white/20 px-3.5 py-2 text-xs font-semibold text-white shadow-xs">
-                <span className="h-2 w-2 rounded-full bg-amber-300 animate-pulse" />
+              <div className="inline-flex shrink-0 items-center gap-2 self-start sm:self-auto rounded-xl bg-white/15 backdrop-blur-xs border border-white/20 px-3.5 py-2 text-xs font-semibold text-white shadow-xs">
+                <span className="h-2 w-2 shrink-0 rounded-full bg-amber-300 animate-pulse" />
                 <span>Super Admin • Monitoring Seluruh Instansi</span>
               </div>
             ) : (
@@ -116,7 +116,7 @@ export default function DashboardLayout() {
         </div>
 
         <main
-          className="relative z-10 -mt-14 flex-1 min-w-0 w-full px-3.5 sm:px-4 lg:px-6 mobile-bottom-nav-pad pb-32 lg:pb-8"
+          className="relative z-10 flex-1 min-w-0 w-full max-w-full overflow-x-hidden px-3.5 pt-4 sm:px-4 sm:pt-5 lg:px-6 lg:pt-6 mobile-bottom-nav-pad pb-32 lg:pb-8"
           style={{
             paddingBottom: 'calc(5.5rem + env(safe-area-inset-bottom, 16px) + 1.5rem)',
           }}

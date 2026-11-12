@@ -32,32 +32,32 @@ export default function InfoRekeningInstansiCard({ instansiProp = null }) {
   }
 
   return (
-    <div className="rounded-2xl border border-border/80 dark:border-border-dark bg-surface dark:bg-surface-dark p-5 shadow-argon">
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+    <div className="min-w-0 overflow-hidden rounded-2xl border border-border/80 dark:border-border-dark bg-surface dark:bg-surface-dark p-3.5 sm:p-5 shadow-argon">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3.5 sm:gap-4">
         {/* Info Instansi & Kelompok */}
-        <div className="flex items-start gap-3.5">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tl from-emerald-800 to-emerald-600 text-white shadow-md shadow-emerald-900/20">
-            <CreditCard className="h-6 w-6" />
+        <div className="flex items-start gap-3 min-w-0">
+          <div className="flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tl from-emerald-800 to-emerald-600 text-white shadow-md shadow-emerald-900/20">
+            <CreditCard className="h-5 w-5 sm:h-6 sm:w-6" />
           </div>
-          <div>
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1 rounded-md bg-emerald-500/10 px-2 py-0.5 text-xs font-bold text-emerald-800 dark:text-emerald-300">
-                <Building2 className="h-3.5 w-3.5" />
-                {instansi.nama_instansi}
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+              <span className="inline-flex max-w-full items-center gap-1 rounded-md bg-emerald-500/10 px-2 py-0.5 text-xs font-bold text-emerald-800 dark:text-emerald-300 truncate">
+                <Building2 className="h-3.5 w-3.5 shrink-0" />
+                <span className="truncate">{instansi.nama_instansi}</span>
               </span>
               {isJamaah && kelompokNama && (
-                <span className="inline-flex items-center gap-1 rounded-md bg-indigo-500/10 px-2 py-0.5 text-xs font-bold text-indigo-700 dark:text-indigo-300">
-                  <Users className="h-3.5 w-3.5" />
-                  Kelompok: {kelompokNama}
+                <span className="inline-flex max-w-full items-center gap-1 rounded-md bg-indigo-500/10 px-2 py-0.5 text-xs font-bold text-indigo-700 dark:text-indigo-300 truncate">
+                  <Users className="h-3.5 w-3.5 shrink-0" />
+                  <span className="truncate">Kelompok: {kelompokNama}</span>
                 </span>
               )}
             </div>
-            <h3 className="mt-1 text-base sm:text-lg font-bold text-ink dark:text-white">
+            <h3 className="mt-1 text-sm sm:text-lg font-bold text-ink dark:text-white leading-snug">
               Nomor Rekening Setoran Tabungan Qurban
             </h3>
-            <p className="text-xs text-ink-muted dark:text-ink-muted-dark">
+            <p className="text-xs text-ink-muted dark:text-ink-muted-dark leading-relaxed">
               {isJamaah
-                ? 'Gunakan nomor rekening resmi instansi/masjid di samping untuk transfer setoran tabungan qurban Anda.'
+                ? 'Gunakan nomor rekening resmi instansi/masjid berikut untuk transfer setoran tabungan qurban Anda.'
                 : 'Informasi nomor rekening resmi instansi yang ditampilkan kepada seluruh anggota/jamaah.'}
             </p>
           </div>
@@ -65,18 +65,18 @@ export default function InfoRekeningInstansiCard({ instansiProp = null }) {
 
         {/* Detail Rekening Bank */}
         {nomorRekening ? (
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-emerald-200 dark:border-emerald-800/60 bg-emerald-50/60 dark:bg-emerald-950/30 px-4 py-3 lg:min-w-[340px]">
-            <div>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-emerald-200 dark:border-emerald-800/60 bg-emerald-50/60 dark:bg-emerald-950/30 px-3.5 py-3 sm:px-4 lg:min-w-[320px] min-w-0">
+            <div className="min-w-0">
               {namaBank && (
-                <p className="text-[11px] font-extrabold uppercase tracking-wider text-emerald-800 dark:text-emerald-400">
+                <p className="text-[11px] font-extrabold uppercase tracking-wider text-emerald-800 dark:text-emerald-400 truncate">
                   {namaBank}
                 </p>
               )}
-              <p className="font-mono text-lg sm:text-xl font-extrabold tracking-wide text-ink dark:text-white select-all">
+              <p className="font-mono text-base sm:text-xl font-extrabold tracking-wide text-ink dark:text-white select-all break-all sm:break-normal">
                 {nomorRekening}
               </p>
               {atasNama && (
-                <p className="text-xs font-medium text-ink-muted dark:text-ink-muted-dark">
+                <p className="text-xs font-medium text-ink-muted dark:text-ink-muted-dark truncate">
                   a.n. <strong className="text-ink dark:text-white">{atasNama}</strong>
                 </p>
               )}
